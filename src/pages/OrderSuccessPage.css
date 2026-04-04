@@ -1,0 +1,261 @@
+/* OrderSuccessPage.css */
+
+.success-page { background: var(--bg); padding-bottom: 0; }
+
+.success-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 28px 60px;
+}
+
+/* ══════════════════════════════════════════
+   THANK YOU HEADER
+   ══════════════════════════════════════════ */
+.success-hero {
+  border: 1.5px dashed var(--primary);
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: center;
+  margin-bottom: 32px;
+  background: #fff9fb;
+  animation: fadeIn 0.5s ease;
+}
+
+[data-theme="dark"] .success-hero { background: rgba(232,96,122,0.05); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.success-hero__title {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.success-hero__subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.success-hero__confirm {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════
+   ORDER SUMMARY BAR
+   ══════════════════════════════════════════ */
+.success-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  background: var(--bg);
+}
+
+.ssb-item {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  border-inline-end: 1px solid var(--border);
+}
+.ssb-item:last-child { border-inline-end: none; }
+
+.ssb-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.ssb-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  word-break: break-word;
+}
+
+/* ══════════════════════════════════════════
+   ORDER DETAILS TABLE
+   ══════════════════════════════════════════ */
+.success-details {
+  margin-bottom: 40px;
+}
+
+.success-section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  text-align: right;
+  margin-bottom: 16px;
+}
+[dir="ltr"] .success-section-title { text-align: left; }
+
+.success-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.success-table th {
+  background: var(--bg-topbar);
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+[dir="ltr"] .success-table th { text-align: left; }
+
+.success-table th:last-child {
+  text-align: left;
+  width: 180px;
+}
+[dir="ltr"] .success-table th:last-child { text-align: right; }
+
+.success-table td {
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+[dir="ltr"] .success-table td { text-align: left; }
+
+.success-table td:last-child {
+  text-align: left;
+  font-weight: 700;
+  color: var(--text);
+}
+[dir="ltr"] .success-table td:last-child { text-align: right; }
+
+.success-table tr:last-child td { border-bottom: none; }
+
+/* Subtotal row — slightly different bg */
+.success-table__subtotal td {
+  background: var(--bg-topbar);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Total row */
+.success-table__total td {
+  background: var(--bg-topbar);
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--primary);
+  border-top: 2px solid var(--border);
+}
+
+/* ══════════════════════════════════════════
+   DELIVERY ADDRESS
+   ══════════════════════════════════════════ */
+.success-address {
+  margin-bottom: 32px;
+}
+
+.success-address__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--bg-topbar);
+}
+[dir="ltr"] .success-address__rows { text-align: left; }
+
+/* Back to shop */
+.success-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+
+.success-back-btn {
+  background: var(--primary);
+  color: #fff;
+  padding: 13px 40px;
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background 0.2s, transform 0.2s;
+}
+.success-back-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+/* ══════════════════════════════════════════
+   FEATURES STRIP
+   ══════════════════════════════════════════ */
+.success-features {
+  background: var(--bg-topbar);
+  border-top: 1px solid var(--border);
+  padding: 44px 0;
+  margin: 0 -28px;
+}
+
+.success-features__grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.success-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-direction: row-reverse;
+}
+[dir="ltr"] .success-feature { flex-direction: row; }
+
+.success-feature__icon { color: var(--primary); flex-shrink: 0; }
+
+.success-feature__text h4 {
+  font-size: 14px; font-weight: 800;
+  color: var(--text); margin-bottom: 4px;
+  text-align: right;
+}
+[dir="ltr"] .success-feature__text h4 { text-align: left; }
+
+.success-feature__text p {
+  font-size: 12px; color: var(--text-secondary);
+  line-height: 1.6; text-align: right;
+}
+[dir="ltr"] .success-feature__text p { text-align: left; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .success-summary-bar { grid-template-columns: repeat(3, 1fr); }
+  .ssb-item:nth-child(3) { border-inline-end: none; }
+  .success-features__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .success-container { padding: 28px 16px 60px; }
+  .success-hero { padding: 24px 16px; }
+  .success-hero__title { font-size: 24px; }
+  .success-summary-bar { grid-template-columns: repeat(2, 1fr); }
+  .ssb-item { border-bottom: 1px solid var(--border); }
+  .success-features { margin: 0 -16px; }
+  .success-features__grid { grid-template-columns: repeat(2, 1fr); padding: 0 16px; }
+}

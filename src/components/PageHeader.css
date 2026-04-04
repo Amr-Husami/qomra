@@ -1,0 +1,85 @@
+/* PageHeader.css — shared pink banner for all inner pages */
+
+.page-header {
+  position: relative;
+  background: linear-gradient(135deg, #fff0f3 0%, #fef9f0 50%, #f0f8ff 100%);
+  padding: 52px 20px;
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Decorative shapes */
+.ph-deco {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Soft colored blobs */
+.ph-deco--circle1 {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 220, 100, 0.25);
+  bottom: -30px; left: 8%;
+}
+
+.ph-deco--circle2 {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: rgba(200, 230, 255, 0.4);
+  top: 10px; left: 38%;
+}
+
+/* Emoji decorations */
+.ph-deco--star     { top: 12%; left: 6%;    font-size: 22px; opacity: 0.7; animation: phFloat 3s ease-in-out infinite; }
+.ph-deco--pacifier { top: 15%; right: 10%;  font-size: 48px; opacity: 0.85; animation: phFloat 4s ease-in-out infinite 0.5s; }
+.ph-deco--diaper   { bottom: 8%; right: 18%; font-size: 32px; opacity: 0.7; animation: phFloat 3.5s ease-in-out infinite 1s; }
+.ph-deco--moon     { bottom: 10%; left: 20%; font-size: 24px; opacity: 0.6; animation: phFloat 4s ease-in-out infinite 0.3s; }
+
+@keyframes phFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-8px) rotate(6deg); }
+}
+
+.ph-content {
+  position: relative;
+  z-index: 2;
+}
+
+.ph-title {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 10px;
+  font-family: 'Tajawal', sans-serif;
+}
+
+.ph-breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.ph-breadcrumb a {
+  color: var(--primary);
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.ph-breadcrumb a:hover { opacity: 0.8; }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 767px) {
+  .page-header { padding: 36px 20px; min-height: 120px; }
+  .ph-title { font-size: 28px; }
+  .ph-deco--pacifier { font-size: 32px; right: 5%; }
+  .ph-deco--circle1 { width: 80px; height: 80px; }
+}

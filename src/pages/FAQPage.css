@@ -1,0 +1,167 @@
+/* FAQPage.css */
+
+.faq-page { background: var(--bg); }
+
+.faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ══════════════════════════════════════════
+   FAQ ACCORDION
+   ══════════════════════════════════════════ */
+.faq-section { padding: 48px 0; }
+
+.faq-item {
+  border: 1.5px dashed var(--border);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--bg);
+}
+
+/* Open state — pink border + soft background */
+.faq-item--open {
+  border-color: var(--primary);
+  border-style: dashed;
+  background: #fff9fb;
+  box-shadow: 0 2px 12px rgba(232,96,122,0.08);
+}
+
+[data-theme="dark"] .faq-item--open {
+  background: rgba(232,96,122,0.05);
+}
+
+/* Question button row */
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  /* RTL: text on right, toggle on left */
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: right;
+  transition: background 0.15s;
+}
+
+[dir="ltr"] .faq-question { text-align: left; }
+
+.faq-question:hover { background: var(--bg-hover); }
+
+/* The +/- circle button */
+.faq-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fce4ec;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+/* When open → filled pink */
+.faq-toggle--open {
+  background: var(--primary);
+  color: #fff;
+}
+
+.faq-q-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  text-align: right;
+  line-height: 1.5;
+}
+
+[dir="ltr"] .faq-q-text { text-align: left; }
+
+/* Answer panel */
+.faq-answer {
+  padding: 4px 20px 20px;
+  /* Left padding for alignment with question text */
+  padding-inline-start: 20px;
+  padding-inline-end: 66px; /* space for the toggle button side */
+  animation: fadeDown 0.2s ease;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.faq-answer p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  text-align: right;
+}
+
+[dir="ltr"] .faq-answer p { text-align: left; }
+
+/* ══════════════════════════════════════════
+   FEATURES STRIP
+   ══════════════════════════════════════════ */
+.faq-features {
+  background: var(--bg-topbar);
+  border-top: 1px solid var(--border);
+  padding: 44px 0;
+}
+
+.faq-features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.faq-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-direction: row-reverse;
+}
+[dir="ltr"] .faq-feature { flex-direction: row; }
+
+.faq-feature-icon { color: var(--primary); flex-shrink: 0; padding-top: 2px; }
+
+.faq-feature-text h4 {
+  font-size: 14px; font-weight: 800;
+  color: var(--text); margin-bottom: 4px;
+  text-align: right;
+}
+[dir="ltr"] .faq-feature-text h4 { text-align: left; }
+
+.faq-feature-text p {
+  font-size: 12px; color: var(--text-secondary);
+  line-height: 1.6; text-align: right;
+}
+[dir="ltr"] .faq-feature-text p { text-align: left; }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 1024px) {
+  .faq-features-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .faq-container { padding: 0 16px; }
+  .faq-q-text { font-size: 14px; }
+  .faq-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 16px;
+    gap: 16px;
+  }
+}

@@ -1,0 +1,140 @@
+/*
+ * index.css — Global Styles & CSS Variables
+ * ─────────────────────────────────────────────────────────────
+ * 💡 WHAT ARE CSS VARIABLES?
+ * We define colors once here with names like --primary.
+ * Then we USE that name everywhere else: color: var(--primary)
+ * When dark mode is on, we just change what --primary means.
+ * Result: one line changes = EVERYTHING updates!
+ * ─────────────────────────────────────────────────────────────
+ */
+
+/* ── Google Fonts — import Arabic + English fonts ────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ═══════════════════════════════════════════
+   LIGHT MODE (default)
+   ═══════════════════════════════════════════ */
+:root {
+  /* Brand colors */
+  --primary:        #E8607A;   /* pink — main brand color */
+  --primary-dark:   #cf4b65;   /* darker pink for hover */
+  --nav-dark:       #2C3A4A;   /* dark navy for nav + headings */
+
+  /* Backgrounds */
+  --bg:             #ffffff;   /* main white background */
+  --bg-topbar:      #f3f4f6;   /* light gray for top bar */
+  --bg-hover:       #fdf2f5;   /* very light pink for hover states */
+  --footer-bg:      #edf2f9;   /* light blue-gray footer */
+  --footer-bottom-bg: #e4eaf3; /* slightly darker for bottom bar */
+
+  /* Text */
+  --text:           #1e293b;   /* main dark text */
+  --text-secondary: #64748b;   /* gray text for less important info */
+  --text-placeholder: #94a3b8; /* placeholder text color */
+
+  /* Borders & Shadows */
+  --border:         #e2e8f0;
+  --footer-border:  #d1dae8;
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:      0 10px 40px rgba(0,0,0,0.14);
+}
+
+/* ═══════════════════════════════════════════
+   DARK MODE
+   Activated when: <html data-theme="dark">
+   ═══════════════════════════════════════════ */
+[data-theme="dark"] {
+  --primary:        #f07090;   /* slightly lighter pink in dark mode */
+  --primary-dark:   #e0506e;
+  --nav-dark:       #1a2535;
+
+  --bg:             #0f172a;   /* dark navy background */
+  --bg-topbar:      #1e293b;
+  --bg-hover:       #1e2d40;
+  --footer-bg:      #1a2535;
+  --footer-bottom-bg: #141e2d;
+
+  --text:           #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-placeholder: #64748b;
+
+  --border:         #2d3d52;
+  --footer-border:  #243248;
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg:      0 10px 40px rgba(0,0,0,0.5);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+
+/* Box-sizing: makes width/padding calculations easier */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base HTML settings */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  /* Arabic font for RTL, English font for LTR */
+  font-family: 'Tajawal', 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;  /* smooth theme switch */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* When language is English, use the English font */
+[dir="ltr"] body {
+  font-family: 'Plus Jakarta Sans', 'Tajawal', sans-serif;
+}
+
+/* Images should never overflow their container */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Remove underline from all links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Remove default list styles */
+ul, ol {
+  list-style: none;
+}
+
+/* Remove button defaults */
+button {
+  font-family: inherit;
+}
+
+/* ── Admin spinner animation ─────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.admin-spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Page layout helper ──────────────────── */
+/* Wrap your page content in .page-content to get proper spacing */
+.page-content {
+  flex: 1;
+  padding: 40px 0;
+}

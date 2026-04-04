@@ -1,0 +1,847 @@
+/*
+ * Navbar.css
+ * ─────────────────────────────────────────────────────────────
+ * 💡 HOW CSS VARIABLES WORK HERE:
+ *   We define colors in index.css under :root {}
+ *   When data-theme="dark" is on <html>, the dark values kick in.
+ *   So dark mode is just ONE attribute change on the html element.
+ *
+ * 💡 HOW RTL/LTR WORKS:
+ *   When dir="rtl" is on <html>, flexbox automatically flips row direction.
+ *   We use [dir="ltr"] selectors to manually fix anything that doesn't auto-flip.
+ * ─────────────────────────────────────────────────────────────
+ */
+
+/* ── Shared container (centers content + max-width) ───────── */
+.nb-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* Sticky wrapper — navbar stays fixed at top when scrolling */
+.navbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════
+   1. TOP BAR
+   ═══════════════════════════════════════════ */
+.top-bar {
+  background: var(--bg-topbar);
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.top-bar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* center the promo text */
+  position: relative;        /* so lang-btn can be positioned absolute */
+}
+
+.promo-text {
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.promo-link {
+  color: var(--primary);
+  font-weight: 600;
+  margin-inline-start: 4px;
+  transition: opacity 0.2s;
+}
+
+.promo-link:hover { opacity: 0.8; }
+
+/* Language button — absolute-positioned to the right (RTL = right side) */
+.lang-btn {
+  position: absolute;
+  right: 28px;   /* RTL: right side of screen */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.lang-btn:hover { background: var(--border); }
+
+/* In LTR (English), move language button to the left */
+[dir="ltr"] .lang-btn {
+  right: auto;
+  left: 28px;
+}
+
+/* ═══════════════════════════════════════════
+   2. MIDDLE BAR
+   ═══════════════════════════════════════════ */
+.middle-bar {
+  background: var(--bg);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/*
+ * In RTL (dir="rtl"), flex row goes RIGHT → LEFT.
+ * So: Logo (first in HTML) appears on the RIGHT ✅
+ *     Search (second) in the CENTER ✅
+ *     Icons (third) on the LEFT ✅
+ *
+ * In LTR (dir="ltr"), flex row goes LEFT → RIGHT.
+ * So: Logo on LEFT, Search CENTER, Icons on RIGHT ✅
+ */
+.middle-bar__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* ── LOGO ─────────────────────────────── */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-ar {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--primary);
+  letter-spacing: -1px;
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+}
+
+.logo-en {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--nav-dark);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── SEARCH BAR ───────────────────────── */
+.search-bar {
+  flex: 1;                       /* take up remaining space */
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  background: var(--bg);
+}
+
+.search-bar:focus-within {
+  border-color: var(--primary);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 11px 18px;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  font-family: inherit;
+  /* In RTL, placeholder aligns right automatically */
+}
+
+.search-input::placeholder { color: var(--text-placeholder); }
+
+.search-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 11px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.search-btn:hover { background: var(--primary-dark); }
+
+/* ── ICONS ────────────────────────────── */
+.icon-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Base style for all icon buttons */
+.icon-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 9px;
+  border-radius: 50%;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.icon-btn:hover {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+
+/* Red badge number on cart/wishlist icons */
+.badge {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;   /* right in RTL, left in LTR */
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+/* ═══════════════════════════════════════════
+   3. BOTTOM NAV
+   ═══════════════════════════════════════════ */
+.bottom-nav {
+  background: var(--nav-dark);
+}
+
+/*
+ * space-between: pushes categories to one end, deals to other end.
+ * In RTL: categories (first) → RIGHT, deals (last) → LEFT ✅
+ * In LTR: categories (first) → LEFT, deals (last) → RIGHT ✅
+ */
+.bottom-nav__inner {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+/* Page links in the middle */
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.82);
+  padding: 15px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s, background 0.2s;
+  display: block;
+}
+
+.nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* The currently active page */
+.nav-link--active {
+  color: var(--primary) !important;
+  font-weight: 700;
+}
+
+/* Deals link — bold at the end of nav */
+.deals-link {
+  color: #fff;
+  padding: 15px 22px;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.deals-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── CATEGORIES BUTTON ────────────────── */
+.categories-wrapper {
+  position: relative;
+}
+
+.categories-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 15px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  height: 100%;
+}
+
+.categories-btn:hover { background: var(--primary-dark); }
+
+/* ── CATEGORIES DROPDOWN ──────────────── */
+.cat-dropdown {
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;   /* RTL: aligns to the right edge; LTR: left edge */
+  min-width: 270px;
+  background: var(--bg);
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+  z-index: 999;
+  overflow: hidden;
+  animation: dropDown 0.2s ease;
+}
+
+@keyframes dropDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cat-dropdown__head {
+  background: var(--primary);
+  color: #fff;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.cat-dropdown__head button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  padding: 0;
+}
+
+.cat-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* RTL: text starts from right */
+  gap: 10px;
+  padding: 15px 22px;
+  color: var(--text);
+  font-size: 15px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s, color 0.15s;
+}
+
+[dir="ltr"] .cat-item {
+  justify-content: flex-start;
+}
+
+.cat-item:last-child { border-bottom: none; }
+
+.cat-item:hover {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+
+.cat-item--hot  { color: #e85d04; font-weight: 700; }
+.cat-item--special { color: var(--primary); font-weight: 700; }
+
+/* ═══════════════════════════════════════════
+   4. SIDEBAR (Cart & Wishlist)
+   ═══════════════════════════════════════════ */
+
+/* Dark overlay behind sidebar */
+.overlay {
+  position: fixed;
+  inset: 0;         /* top:0; left:0; right:0; bottom:0 */
+  background: rgba(0, 0, 0, 0.48);
+  z-index: 1000;
+  display: flex;
+}
+
+/* Sidebar panels come from the right */
+.overlay--sidebar { justify-content: flex-end; }
+
+/* Mobile menu comes from the left (start in RTL) */
+.overlay--menu { justify-content: flex-start; }
+
+/* Sidebar panel */
+.sidebar {
+  background: var(--bg);
+  width: 380px;
+  max-width: 100vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: slideFromRight 0.3s ease;
+}
+
+@keyframes slideFromRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.sidebar__head {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar__head h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.close-btn:hover { background: var(--bg-hover); }
+
+/* Scrollable items area */
+.sidebar__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* Single cart/wishlist item */
+.s-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.s-item:last-child { border-bottom: none; }
+
+.s-item img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--bg-topbar);
+  flex-shrink: 0;
+}
+
+.s-item__info {
+  flex: 1;
+  text-align: right;      /* RTL: text on right */
+}
+
+[dir="ltr"] .s-item__info { text-align: left; }
+
+.s-item__name {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.s-item__price {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.s-item__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 4px 0 6px;
+  justify-content: flex-end;
+}
+
+[dir="ltr"] .s-item__tags { justify-content: flex-start; }
+
+.s-item__tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-topbar);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.s-item__color-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* Delete button */
+.s-item__del {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* Color + Size tags row under product name */
+.s-item__tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+  justify-content: flex-end;
+}
+
+[dir="ltr"] .s-item__tags { justify-content: flex-start; }
+
+.s-item__tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-topbar);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Small color circle inside the tag */
+.s-item__color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.s-item__del:hover {
+  background: #fff0f3;
+  border-color: var(--primary);
+}
+
+/* Empty state (no items) */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 20px;
+  color: var(--text-placeholder);
+  gap: 16px;
+  text-align: center;
+  font-size: 15px;
+}
+
+/* Sidebar footer: total + checkout */
+.sidebar__foot {
+  padding: 20px 22px;
+  border-top: 1px solid var(--border);
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.total-label {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.total-num {
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.checkout-btn {
+  display: block;
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  text-align: center;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.checkout-btn:hover { background: var(--primary-dark); }
+
+/* ═══════════════════════════════════════════
+   5. MOBILE NAV
+   ═══════════════════════════════════════════ */
+.mobile-nav {
+  display: none;       /* hidden on desktop — shown via media query below */
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+}
+
+.mobile-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Mobile search bar (expands below nav) */
+.mobile-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--bg-topbar);
+  border-top: 1px solid var(--border);
+}
+
+.mobile-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.mobile-search input::placeholder { color: var(--text-placeholder); }
+
+.mobile-search button {
+  background: var(--primary);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.mobile-search button:hover { background: var(--primary-dark); }
+
+/* ── MOBILE MENU PANEL ────────────────── */
+.mobile-menu {
+  background: var(--bg);
+  width: 300px;
+  max-width: 88vw;
+  height: 100%;
+  overflow-y: auto;
+  animation: slideFromLeft 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideFromLeft {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+.mob-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mob-menu__links {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mob-link {
+  display: block;
+  padding: 15px 22px;
+  color: var(--text);
+  font-size: 15px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  transition: color 0.2s, background 0.2s;
+}
+
+[dir="ltr"] .mob-link { text-align: left; }
+
+.mob-link:hover {
+  color: var(--primary);
+  background: var(--bg-hover);
+}
+
+.mob-link--deals {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.mob-divider {
+  height: 6px;
+  background: var(--bg-topbar);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.mob-section-label {
+  padding: 12px 22px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-placeholder);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-align: right;
+}
+
+[dir="ltr"] .mob-section-label { text-align: left; }
+
+.mob-actions {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mob-actions button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-topbar);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  width: 100%;
+  font-family: inherit;
+  /* RTL: icon on right side */
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  transition: background 0.2s;
+}
+
+[dir="ltr"] .mob-actions button {
+  flex-direction: row;
+}
+
+.mob-actions button:hover { background: var(--border); }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════ */
+
+/* Desktop (1281px+) → everything normal, nothing to change */
+
+/* Laptop (1025px – 1280px) */
+@media (max-width: 1280px) {
+  .search-bar { max-width: 420px; }
+  .nav-link { padding: 15px 13px; }
+  .logo-en { font-size: 14px; }
+}
+
+/* Tablet (768px – 1024px) */
+@media (max-width: 1024px) {
+  /* Hide the promo top bar on tablet */
+  .top-bar { display: none; }
+
+  /* Smaller text in nav */
+  .nav-link { padding: 15px 10px; font-size: 13px; }
+  .categories-btn { padding: 15px 14px; font-size: 13px; }
+  .deals-link { padding: 15px 14px; font-size: 13px; }
+  .search-btn { padding: 11px 18px; }
+
+  /* Hide English part of logo on tablet */
+  .logo-en { display: none; }
+}
+
+/* Mobile (< 768px) — big change: hide desktop nav, show mobile nav */
+@media (max-width: 767px) {
+  /* Hide all desktop nav parts */
+  .top-bar,
+  .middle-bar,
+  .bottom-nav {
+    display: none !important;
+  }
+
+  /* Show the mobile nav */
+  .mobile-nav {
+    display: block;
+  }
+
+  /* Make sidebar full-width on mobile */
+  .sidebar {
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+  }
+
+  /* Sidebar comes from bottom on mobile */
+  .overlay--sidebar {
+    align-items: flex-end;
+    justify-content: stretch;
+  }
+
+  @keyframes slideFromRight {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+}
