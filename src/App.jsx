@@ -11,6 +11,7 @@ import AboutPage from './pages/AboutPage'
 import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import OrderSuccessPage from './pages/OrderSuccessPage'
+import ProfilePage from './pages/ProfilePage'
 import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyPage } from './pages/AuthPages'
 
 // ── Admin ─────────────────────────────────────────────────────
@@ -25,9 +26,6 @@ import AdminBrands from './pages/admin/AdminBrands'
 
 import './index.css'
 
-function ProfilePage() {
-  return <div style={{ padding: '80px 20px', textAlign: 'center' }}><h1 style={{ color: 'var(--primary)', fontSize: '28px' }}>الملف الشخصي</h1><p style={{ color: 'var(--text-secondary)', marginTop: '12px' }}>قريباً 🚀</p></div>
-}
 function NotFoundPage() {
   return <div style={{ padding: '80px 20px', textAlign: 'center' }}><h1 style={{ fontSize: '72px', color: 'var(--primary)' }}>404</h1></div>
 }
