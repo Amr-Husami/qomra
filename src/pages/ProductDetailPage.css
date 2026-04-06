@@ -954,10 +954,13 @@
 }
 
 @media (max-width: 767px) {
-  .pd-container { padding: 0 16px; }
+  .pd-container { padding: 0 20px; }
   .pd-name { font-size: 18px; }
   .pd-price-current { font-size: 22px; }
   .pd-top { gap: 20px; }
+  /* Gallery first on mobile */
+  .gallery { order: -1; max-width: 100%; }
+  .pd-info { order: 1; }
   .gallery__thumbs { width: 60px; }
   .gallery__thumb { width: 60px; height: 60px; }
   .pd-tab-btn { padding: 12px 16px; font-size: 14px; }

@@ -1,4 +1,41 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
+// ── Floating baby background decorations (shown on all pages) ──
+function FloatingBabyDecor() {
+  const items = [
+    { emoji: '🍼', x: 4,  y: 12, size: 24, delay: 0,   dur: 7   },
+    { emoji: '⭐', x: 14, y: 68, size: 20, delay: 1.5, dur: 10  },
+    { emoji: '🎀', x: 89, y: 22, size: 22, delay: 2,   dur: 8   },
+    { emoji: '🐥', x: 93, y: 58, size: 26, delay: 0.5, dur: 11  },
+    { emoji: '🎈', x: 2,  y: 42, size: 28, delay: 3,   dur: 7.5 },
+    { emoji: '🌙', x: 80, y: 83, size: 22, delay: 1,   dur: 12  },
+    { emoji: '💕', x: 48, y: 4,  size: 20, delay: 2.5, dur: 9   },
+    { emoji: '🧸', x: 24, y: 88, size: 24, delay: 4,   dur: 8.5 },
+    { emoji: '🌟', x: 72, y: 8,  size: 18, delay: 0.8, dur: 10  },
+    { emoji: '🍭', x: 38, y: 78, size: 22, delay: 3.5, dur: 9.5 },
+    { emoji: '🦋', x: 60, y: 92, size: 20, delay: 1.2, dur: 11  },
+    { emoji: '🌈', x: 55, y: 48, size: 26, delay: 5,   dur: 14  },
+  ]
+  return (
+    <div className="baby-bg-decor" aria-hidden="true">
+      {items.map((item, i) => (
+        <span
+          key={i}
+          className="baby-bg-item"
+          style={{
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            fontSize: `${item.size}px`,
+            animationDelay: `${item.delay}s`,
+            animationDuration: `${item.dur}s`,
+          }}
+        >
+          {item.emoji}
+        </span>
+      ))}
+    </div>
+  )
+}
 import { AppProvider } from './context/AppContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -61,6 +98,7 @@ function StoreApp() {
 export default function App() {
   return (
     <AppProvider>
+      <FloatingBabyDecor />
       <BrowserRouter>
         <Routes>
           {/* Admin panel — no Navbar/Footer, own sidebar layout */}

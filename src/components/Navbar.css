@@ -251,9 +251,9 @@
 }
 
 .nav-link {
-  color: rgba(255, 255, 255, 0.82);
-  padding: 15px 18px;
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 15px 14px;
+  font-size: 15px;
   font-weight: 500;
   transition: color 0.2s, background 0.2s;
   display: block;
@@ -273,8 +273,8 @@
 /* Deals link — bold at the end of nav */
 .deals-link {
   color: #fff;
-  padding: 15px 22px;
-  font-size: 14px;
+  padding: 15px 20px;
+  font-size: 15px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -298,23 +298,31 @@
   background: var(--primary);
   color: #fff;
   border: none;
-  padding: 15px 22px;
-  font-size: 14px;
+  padding: 15px 26px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.2s;
   height: 100%;
+  min-width: 180px;
+  justify-content: center;
 }
 
 .categories-btn:hover { background: var(--primary-dark); }
 
-/* ── CATEGORIES DROPDOWN ──────────────── */
+/* ── CATEGORIES DROPDOWN — same width as button ──────────────── */
+.categories-wrapper {
+  position: relative;
+  min-width: 180px;
+}
+
 .cat-dropdown {
   position: absolute;
   top: 100%;
-  inset-inline-start: 0;   /* RTL: aligns to the right edge; LTR: left edge */
-  min-width: 270px;
+  inset-inline-start: 0;
+  width: 100%;           /* match the wrapper (= button) width */
+  min-width: 180px;
   background: var(--bg);
   border-radius: 0 0 14px 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
@@ -644,7 +652,12 @@
 .mobile-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
+}
+
+@media (max-width: 380px) {
+  .mobile-right .icon-btn { padding: 6px; }
+  .mobile-nav__inner { padding: 10px 12px; }
 }
 
 /* Mobile search bar (expands below nav) */
@@ -733,6 +746,19 @@
 .mob-link--deals {
   color: var(--primary);
   font-weight: 700;
+}
+
+.mob-link--profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-direction: row-reverse;
+  font-weight: 600;
+  color: var(--text);
+}
+
+[dir="ltr"] .mob-link--profile {
+  flex-direction: row;
 }
 
 .mob-divider {

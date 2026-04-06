@@ -138,3 +138,94 @@ button {
   flex: 1;
   padding: 40px 0;
 }
+
+/* ══════════════════════════════════════════
+   FLOATING BABY BACKGROUND DECORATIONS
+   Shows subtle animated baby icons on all pages
+   ══════════════════════════════════════════ */
+.baby-bg-decor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.baby-bg-item {
+  position: absolute;
+  opacity: 0.10;
+  animation: babyFloat ease-in-out infinite alternate;
+  user-select: none;
+  line-height: 1;
+}
+
+@keyframes babyFloat {
+  0%   { transform: translateY(0px)   rotate(-8deg) scale(1);    }
+  50%  { transform: translateY(-18px) rotate(6deg)  scale(1.08); }
+  100% { transform: translateY(-8px)  rotate(-3deg) scale(0.95); }
+}
+
+[data-theme="dark"] .baby-bg-item {
+  opacity: 0.04;
+}
+
+/* ══════════════════════════════════════════
+   DARK MODE FIXES
+   Patch hardcoded light colors so dark mode looks right
+   ══════════════════════════════════════════ */
+
+/* Newsletter card — light pastel gradient becomes dark navy */
+[data-theme="dark"] .newsletter-card {
+  background: linear-gradient(135deg, #1e2140 0%, #1a2535 60%, #162030 100%);
+}
+
+/* Marquee banner — hardcoded pastel → dark version */
+[data-theme="dark"] .marquee-section {
+  background: linear-gradient(135deg, #1a1f35 0%, #1e2a38 50%, #131d2d 100%);
+}
+
+/* Popup decoration circle */
+[data-theme="dark"] .popup-bottom-deco {
+  background: linear-gradient(135deg, #2d1a30, #1e2040);
+}
+
+/* Promo banner center card — dark text color invisible on dark bg */
+[data-theme="dark"] .promo-card__content--dark {
+  color: #f1f5f9;
+}
+
+/* Auth error/success alerts — light bg → dark-tinted */
+[data-theme="dark"] .auth-alert--error {
+  background: rgba(197, 48, 48, 0.18);
+  border-color: rgba(230, 100, 100, 0.3);
+  color: #fc8181;
+}
+
+[data-theme="dark"] .auth-alert--success {
+  background: rgba(39, 103, 73, 0.18);
+  border-color: rgba(72, 187, 120, 0.3);
+  color: #68d391;
+}
+
+/* Newsletter email input in dark mode */
+[data-theme="dark"] .nl-input {
+  background: var(--bg-topbar);
+  border: 1px solid var(--border);
+}
+
+/* Brand chips in dark mode */
+[data-theme="dark"] .brand-chip {
+  background: var(--bg-topbar);
+}
+
+/* Feature cards in dark mode */
+[data-theme="dark"] .feature-card {
+  background: var(--bg-topbar);
+}
+
+/* Auth form box in dark mode */
+[data-theme="dark"] .auth-form-box,
+[data-theme="dark"] .auth-card {
+  background: var(--bg);
+  border-color: var(--primary);
+}

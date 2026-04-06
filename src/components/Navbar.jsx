@@ -318,7 +318,7 @@ export default function Navbar() {
             <Link to="/" className="nav-link nav-link--active">{t.home}</Link>
             <Link to="/shop" className="nav-link">{t.store}</Link>
             <Link to="/contact" className="nav-link">{t.contact}</Link>
-            <Link to="/more" className="nav-link">{t.more}</Link>
+            <Link to="/about" className="nav-link">{t.more}</Link>
           </div>
 
           {/* DEALS — far end of nav */}
@@ -342,8 +342,16 @@ export default function Navbar() {
             <span className="logo-ar">قمرة</span>
           </Link>
 
-          {/* Right side: search + cart */}
+          {/* Right side: profile + search + cart */}
           <div className="mobile-right">
+            <Link
+              to={isLoggedIn ? "/profile" : "/login"}
+              className="icon-btn"
+              title={t.profile}
+            >
+              <User size={22} />
+              {isLoggedIn && <span className="badge badge--green">✓</span>}
+            </Link>
             <button className="icon-btn" onClick={() => setShowMobileSearch(v => !v)}>
               <Search size={22} />
             </button>
@@ -398,6 +406,14 @@ export default function Navbar() {
               <Link className="mob-link" to="/shop" onClick={() => setShowMobileMenu(false)}>{t.store}</Link>
               <Link className="mob-link" to="/contact" onClick={() => setShowMobileMenu(false)}>{t.contact}</Link>
               <Link className="mob-link mob-link--deals" to="/deals" onClick={() => setShowMobileMenu(false)}>{t.deals}</Link>
+              <Link
+                className="mob-link mob-link--profile"
+                to={isLoggedIn ? "/profile" : "/login"}
+                onClick={() => setShowMobileMenu(false)}
+              >
+                <User size={16} />
+                <span>{isLoggedIn ? t.profile : (language === 'ar' ? 'تسجيل الدخول' : 'Login')}</span>
+              </Link>
 
               <div className="mob-divider" />
               <p className="mob-section-label">{t.allCategories}</p>

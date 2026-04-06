@@ -14,7 +14,7 @@
  */
 
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   Star, Heart, ShoppingCart, Minus, Plus,
   ChevronLeft, ChevronRight, Maximize2,
@@ -184,26 +184,31 @@ function ImageGallery({ images }) {
 }
 
 // ─── PRODUCT INFO PANEL ─────────────────────────────────────────
-function ProductInfo({ product, t, language }) {
+function ProductInfo({ product, productId, t, language }) {
   const { addToCart, toggleWishlist, isInWishlist } = useApp()
   const [selectedColor, setSelectedColor] = useState(product.defaultColor)
   const [selectedSize, setSelectedSize] = useState(product.defaultSize)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
 
-  const inWishlist = isInWishlist(product.id)
+  const inWishlist = isInWishlist(productId)
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
   const currentColorName = product.colors.find(c => c.id === selectedColor)
 
   const handleAddToCart = () => {
     // 🔌 API NEEDED: POST /api/cart  { productId, qty, color, size }
     addToCart({
-      id: product.id,
+      id: productId,
+      cartKey: `${productId}-${selectedColor || 'default'}-${selectedSize || 'default'}`,
       name: product.nameEn,
       nameAr: product.nameAr,
       price: product.price,
       image: product.images[0],
       qty,
+      color: currentColorName?.nameEn,
+      colorAr: currentColorName?.nameAr,
+      colorHex: product.colors.find(c => c.id === selectedColor)?.hex,
+      size: selectedSize,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 1800)
@@ -212,7 +217,7 @@ function ProductInfo({ product, t, language }) {
   const handleWishlist = () => {
     // 🔌 API NEEDED: POST /api/wishlist/toggle  { productId }
     toggleWishlist({
-      id: product.id,
+      id: productId,
       name: product.nameEn,
       nameAr: product.nameAr,
       price: product.price,
@@ -510,9 +515,10 @@ export default function ProductDetailPage() {
   const { language } = useApp()
   const t = T[language]
   const [activeTab, setActiveTab] = useState('reviews') // 'info' | 'reviews'
+  const { id } = useParams()
 
-  // 🔌 API NEEDED: GET /api/products/:id
-  // In the future: const { id } = useParams() → fetch product by id
+  // Use URL param id (UUID string) if available, otherwise fall back to static data id
+  const productId = id || productDetail.id
   const product = productDetail
 
   return (
@@ -532,13 +538,12 @@ export default function ProductDetailPage() {
 
         {/* ── TOP SECTION: Images + Info ────────── */}
         {/*
-         * Layout (RTL):
-         *   [Info Panel]  [Main Image]  [Thumbnails]
-         * Layout (LTR):
-         *   [Thumbnails]  [Main Image]  [Info Panel]
+         * Layout (RTL):  [Info Panel]  [Gallery]
+         * Layout (LTR):  [Gallery]  [Info Panel]
+         * On mobile: gallery first (order), then info
          */}
         <div className="pd-top">
-          <ProductInfo product={product} t={t} language={language} />
+          <ProductInfo product={product} productId={productId} t={t} language={language} />
           <ImageGallery images={product.images} />
         </div>
 

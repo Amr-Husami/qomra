@@ -217,7 +217,7 @@
 .footer__bottom__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -287,20 +287,8 @@
   }
 
   .footer__bottom__inner {
-    flex-direction: column-reverse;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: center;
     gap: 12px;
-  }
-
-  [dir="ltr"] .footer__bottom__inner {
-    align-items: flex-start;
-  }
-
-  .ft-payments {
-    justify-content: flex-end;
-  }
-
-  [dir="ltr"] .ft-payments {
-    justify-content: flex-start;
   }
 }

@@ -13,7 +13,8 @@
  */
 
 import { Link } from 'react-router-dom'
-import { Phone, Mail, ExternalLink } from 'lucide-react'
+import { Phone, Mail } from 'lucide-react'
+import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa'
 import { useApp } from '../context/AppContext'
 import './Footer.css'
 
@@ -35,10 +36,10 @@ const T = {
         { label: 'مركز المساعدة و الدعم', to: '/support' },
       ],
       support: [
-        { label: 'معلومات التوصيل', to: '/delivery' },
-        { label: 'الاسترجاع', to: '/returns' },
-        { label: 'كيفية الطلب', to: '/how-to-order' },
-        { label: 'كيفية التوصيل', to: '/shipping' },
+        { label: 'معلومات التوصيل', to: '/faq' },
+        { label: 'الاسترجاع', to: '/faq' },
+        { label: 'كيفية الطلب', to: '/faq' },
+        { label: 'كيفية التوصيل', to: '/faq' },
       ],
     },
   },
@@ -58,27 +59,22 @@ const T = {
         { label: 'Help Center', to: '/support' },
       ],
       support: [
-        { label: 'Delivery Info', to: '/delivery' },
-        { label: 'Returns', to: '/returns' },
-        { label: 'How to Order', to: '/how-to-order' },
-        { label: 'Shipping Info', to: '/shipping' },
+        { label: 'Delivery Info', to: '/faq' },
+        { label: 'Returns', to: '/faq' },
+        { label: 'How to Order', to: '/faq' },
+        { label: 'Shipping Info', to: '/faq' },
       ],
     },
   },
 }
 
 // ─── SOCIAL LINKS ────────────────────────────────────────────────────────
-// Update these URLs with the real social media links
 const SOCIALS = [
-  { icon: '📘', label: 'Facebook',  url: 'https://facebook.com' },
-  { icon: '🐦', label: 'Twitter',   url: 'https://twitter.com' },
-  { icon: '📸', label: 'Instagram', url: 'https://instagram.com' },
-  { icon: '📌', label: 'Pinterest', url: 'https://pinterest.com' },
-  { icon: '▶️', label: 'Youtube',   url: 'https://youtube.com' },
+  { icon: <FaFacebook />,  label: 'Facebook',  url: 'https://facebook.com' },
+  { icon: <FaInstagram />, label: 'Instagram', url: 'https://instagram.com' },
+  { icon: <FaTwitter />,   label: 'Twitter',   url: 'https://twitter.com' },
+  { icon: <FaYoutube />,   label: 'YouTube',   url: 'https://youtube.com' },
 ]
-
-// ─── PAYMENT METHODS (text-based for now, replace with real logos later) ──
-const PAYMENTS = ['Mastercard', 'Google Pay', 'Payoneer', 'Apple Pay', 'PayPal']
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────
 export default function Footer() {
@@ -182,17 +178,7 @@ export default function Footer() {
           ══════════════════════════════════ */}
       <div className="footer__bottom">
         <div className="ft-container footer__bottom__inner">
-
-          {/* Copyright */}
           <p className="ft-copyright">{t.copyright}</p>
-
-          {/* Payment icons */}
-          <div className="ft-payments">
-            {PAYMENTS.map((p) => (
-              <span key={p} className="ft-payment-badge">{p}</span>
-            ))}
-          </div>
-
         </div>
       </div>
 

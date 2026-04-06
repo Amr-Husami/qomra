@@ -51,7 +51,7 @@ const T = {
       { icon: <ThumbsUp size={30} />, title: 'شهادات موثوقة', desc: 'شهادات مضمونة من ثلاث جهات موثوقة' },
       { icon: <RotateCcw size={30} />, title: 'إرجاع خلال 30 يوم', desc: 'سياسة إرجاع مرنة: إرجاع سلعتك وسنحولها إلى رصيد لك' },
     ],
-    marqueeText: ['كل مستلزمات طفلك بين يديك', 'نحن هنا من اجلك و من اجل طفلك', 'عالم من المرح', '🍼', 'كل مستلزمات طفلك بين يديك', 'نحن هنا من اجلك و من اجل طفلك', 'عالم من المرح', '🍼'],
+    marqueeText: ['كل مستلزمات طفلك بين يديك', '🍼', 'نحن هنا من اجلك و من اجل طفلك', '⭐', 'عالم من المرح', '🎀', 'تسوق الأفضل لطفلك', '🐥', 'كل مستلزمات طفلك بين يديك', '🍼', 'نحن هنا من اجلك و من اجل طفلك', '⭐', 'عالم من المرح', '🎈'],
     instagramTitle: 'تابعنا على الانستكرام',
     instagramHandle: '@Qomra',
     popupTitle: 'سجّل بريدك الالكتروني هنا',
@@ -77,7 +77,7 @@ const T = {
       { icon: <ThumbsUp size={30} />, title: 'Trusted Reviews', desc: 'Reviews certified by three trusted sources' },
       { icon: <RotateCcw size={30} />, title: '30-Day Returns', desc: 'Flexible return policy: return and get store credit' },
     ],
-    marqueeText: ['All baby essentials at your fingertips', 'Here for you and your child', 'A world of fun', '🍼', 'All baby essentials at your fingertips', 'Here for you and your child', 'A world of fun', '🍼'],
+    marqueeText: ['All baby essentials at your fingertips', '🍼', 'Here for you and your child', '⭐', 'A world of fun', '🎀', 'Shop the best for your baby', '🐥', 'All baby essentials at your fingertips', '🍼', 'Here for you and your child', '⭐', 'A world of fun', '🎈'],
     instagramTitle: 'Follow us on Instagram',
     instagramHandle: '@Qomra',
     popupTitle: 'Subscribe to our newsletter',
@@ -133,12 +133,12 @@ function HeroSlider({ t, language, slides }) {
         </Link>
       </div>
 
-      {/* Arrow buttons */}
+      {/* Arrow buttons — icons swap for RTL so they point the right way */}
       <button className="hero__arrow hero__arrow--prev" onClick={prev}>
-        <ChevronLeft size={22} />
+        {language === 'ar' ? <ChevronRight size={22} /> : <ChevronLeft size={22} />}
       </button>
       <button className="hero__arrow hero__arrow--next" onClick={next}>
-        <ChevronRight size={22} />
+        {language === 'ar' ? <ChevronLeft size={22} /> : <ChevronRight size={22} />}
       </button>
 
       {/* Dot indicators */}
@@ -217,24 +217,28 @@ function ProductsSection({ title, products, viewAllLink, t }) {
 // SECTION: Shop By Age
 // ══════════════════════════════════════════════════════════════
 function ShopByAge({ t, language, ageGroups }) {
+  const sliderRef = useRef(null)
+
   return (
     <section className="hp-section">
       <div className="hp-container">
         <SectionHeader title={t.shopByAge} />
-        <div className="age-grid">
-          {(ageGroups || []).map((group, index) => (
-            <Link key={group.id ?? group._id ?? group.slug ?? index} to={`/shop?age=${group.slug}`} className="age-card">
-              <div className="age-card__circle" style={{ background: group.bg }}>
-                <img src={group.image} alt={group.labelAr} className="age-card__img" />
-              </div>
-              <p className="age-card__label">
-                {((language === 'ar' ? group.labelAr : group.labelEn) || '')
-                  .split('\n').map((line, i) => (
-                    <span key={i}>{line}<br /></span>
-                  ))}
-              </p>
-            </Link>
-          ))}
+        <div className="age-slider-outer">
+          <div className="age-slider" ref={sliderRef}>
+            {(ageGroups || []).map((group, index) => (
+              <Link key={group.id ?? group._id ?? group.slug ?? index} to={`/shop?age=${group.slug}`} className="age-card">
+                <div className="age-card__circle" style={{ background: group.bg }}>
+                  <img src={group.image} alt={group.labelAr} className="age-card__img" />
+                </div>
+                <p className="age-card__label">
+                  {((language === 'ar' ? group.labelAr : group.labelEn) || '')
+                    .split('\n').map((line, i) => (
+                      <span key={i}>{line}<br /></span>
+                    ))}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -249,25 +253,27 @@ function MarqueeBanner({ t }) {
     <section className="marquee-section">
       <div className="marquee-track">
         <div className="marquee-content">
-          {t.marqueeText.map((text, i) => (
-            <span key={i} className="marquee-item">
-              {text}
-              {typeof text === 'string' && !text.includes('🍼') && (
-                <span className="marquee-sep">✦</span>
-              )}
-            </span>
-          ))}
+          {t.marqueeText.map((text, i) => {
+            const isIcon = typeof text === 'string' && text.length <= 2
+            return (
+              <span key={i} className={`marquee-item ${isIcon ? 'marquee-item--icon' : ''}`}>
+                {text}
+                {!isIcon && <span className="marquee-sep">✦</span>}
+              </span>
+            )
+          })}
         </div>
         {/* Duplicate for seamless loop */}
         <div className="marquee-content" aria-hidden="true">
-          {t.marqueeText.map((text, i) => (
-            <span key={i} className="marquee-item">
-              {text}
-              {typeof text === 'string' && !text.includes('🍼') && (
-                <span className="marquee-sep">✦</span>
-              )}
-            </span>
-          ))}
+          {t.marqueeText.map((text, i) => {
+            const isIcon = typeof text === 'string' && text.length <= 2
+            return (
+              <span key={i} className={`marquee-item ${isIcon ? 'marquee-item--icon' : ''}`}>
+                {text}
+                {!isIcon && <span className="marquee-sep">✦</span>}
+              </span>
+            )
+          })}
         </div>
       </div>
     </section>
@@ -441,20 +447,35 @@ function FeaturesStrip({ t }) {
 // SECTION: Instagram Photos
 // ══════════════════════════════════════════════════════════════
 function InstagramSection({ t }) {
+  const sliderRef = useRef(null)
+
+  const slide = (dir) => {
+    if (!sliderRef.current) return
+    sliderRef.current.scrollBy({ left: dir * 240, behavior: 'smooth' })
+  }
+
   return (
     <section className="instagram-section">
-      <div className="insta-grid">
-        {instagramPhotos.map((photo, i) => (
-          <div key={photo.id} className={`insta-item ${photo.label ? 'insta-item--center' : ''}`}>
-            <img src={photo.image} alt="instagram" />
-            {photo.label && (
-              <div className="insta-overlay">
-                <p className="insta-title">{t.instagramTitle}</p>
-                <p className="insta-handle">{t.instagramHandle}</p>
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="insta-slider-wrap">
+        <button className="insta-nav-btn insta-nav-btn--prev" onClick={() => slide(-1)}>
+          <ChevronLeft size={18} />
+        </button>
+        <div className="insta-slider" ref={sliderRef}>
+          {instagramPhotos.map((photo) => (
+            <div key={photo.id} className={`insta-item ${photo.label ? 'insta-item--center' : ''}`}>
+              <img src={photo.image} alt="instagram" />
+              {photo.label && (
+                <div className="insta-overlay">
+                  <p className="insta-title">{t.instagramTitle}</p>
+                  <p className="insta-handle">{t.instagramHandle}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <button className="insta-nav-btn insta-nav-btn--next" onClick={() => slide(1)}>
+          <ChevronRight size={18} />
+        </button>
       </div>
     </section>
   )
@@ -534,9 +555,10 @@ export default function HomePage() {
     loading,           // true while data is loading
   } = useHomeData()
 
-  // Show popup after 3 seconds, only once per session
+  // Show popup after 3 seconds, only once ever (dismissed = never show again)
   const [showPopup, setShowPopup] = useState(false)
   useEffect(() => {
+    if (localStorage.getItem('qomra_popup_dismissed')) return
     const timer = setTimeout(() => setShowPopup(true), 3000)
     return () => clearTimeout(timer)
   }, [])
@@ -608,7 +630,10 @@ export default function HomePage() {
 
       {/* 13. Newsletter Popup */}
       {showPopup && (
-        <NewsletterPopup t={t} onClose={() => setShowPopup(false)} />
+        <NewsletterPopup t={t} onClose={() => {
+          localStorage.setItem('qomra_popup_dismissed', '1')
+          setShowPopup(false)
+        }} />
       )}
 
     </main>

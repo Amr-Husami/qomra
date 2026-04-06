@@ -21,6 +21,40 @@
 
 import { useState, useEffect } from 'react'
 import { bannersApi, taxonomyApi, productsApi, brandsApi } from './api'
+
+const BACKEND = 'https://qomra-t8pr.onrender.com'
+
+// Prepend the backend base URL to relative image paths from the API
+function fixImageUrl(url) {
+  if (!url || typeof url !== 'string') return url
+  if (url.startsWith('http')) return url
+  return `${BACKEND}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
+// Extract image URL string from either a string or an image object
+function extractImageUrl(img) {
+  if (!img) return null
+  if (typeof img === 'string') return fixImageUrl(img)
+  return fixImageUrl(img.imageUrl || img.url || img.image || null)
+}
+
+// Normalize image fields on a product object
+function fixProductImages(product) {
+  if (!product) return product
+
+  // images[] is an array of objects { imageUrl, order, ... } — extract URL strings
+  const imageObjects = Array.isArray(product.images) ? product.images : []
+  const imageUrls = imageObjects.map(extractImageUrl).filter(Boolean)
+
+  // Use first image as the main image; fall back to top-level imageUrl/image field
+  const mainImage = imageUrls[0] || fixImageUrl(product.imageUrl || product.image) || ''
+
+  return {
+    ...product,
+    image: mainImage,
+    images: imageUrls,
+  }
+}
 import {
   heroSlides as fakeSlides,
   categories as fakeCategories,
@@ -46,6 +80,7 @@ export function useHomeData() {
     // Unlike Promise.all which stops if ONE fails
     const fetchAll = async () => {
       setLoading(true)
+      try {
 
       const results = await Promise.allSettled([
         bannersApi.getBanners(),               // [0]
@@ -62,44 +97,70 @@ export function useHomeData() {
 
       // Banners
       if (results[0].status === 'fulfilled' && results[0].value?.length > 0) {
-        setBanners(results[0].value)
+        setBanners(results[0].value.map(b => ({
+          ...b,
+          image: fixImageUrl(b.imageUrl || b.image),
+          link: b.linkUrl || '/',
+          overlayColor: 'rgba(15,20,40,0.55)',
+          btnAr: 'تسوق الآن',
+          btnEn: 'Shop Now',
+          descAr: '',
+          descEn: '',
+        })))
       }
 
       // Categories
       if (results[1].status === 'fulfilled' && results[1].value?.length > 0) {
-        setCategories(results[1].value)
+        setCategories(results[1].value.map(c => ({
+          ...c,
+          image: fixImageUrl(c.imageUrl || c.image),
+          nameAr: c.titleAr || c.nameAr,
+          nameEn: c.titleEn || c.nameEn,
+        })))
       }
 
       // Age groups
       if (results[2].status === 'fulfilled' && results[2].value?.length > 0) {
-        setAgeGroups(results[2].value)
+        setAgeGroups(results[2].value.map(g => ({
+          ...g,
+          slug: g.slug || g.value?.toLowerCase() || g.id,
+          labelAr: g.labelAr || g.labelLocalized?.ar || g.label,
+          labelEn: g.labelEn || g.labelLocalized?.en || g.label,
+          image: fixImageUrl(g.imageUrl || g.image),
+        })))
       }
 
       // New products
       if (results[3].status === 'fulfilled') {
         const data = results[3].value
-        // Backend might return { products: [...] } or just [...]
-        setNewProducts(Array.isArray(data) ? data : data?.products || fakeProducts.slice(0,4))
+        const list = Array.isArray(data) ? data : data?.data || data?.products || fakeProducts.slice(0,4)
+        setNewProducts(list.map(fixProductImages))
       }
 
       // Best sellers
       if (results[4].status === 'fulfilled') {
         const data = results[4].value
-        setBestSellers(Array.isArray(data) ? data : data?.products || fakeProducts.slice(0,4))
+        const list = Array.isArray(data) ? data : data?.data || data?.products || fakeProducts.slice(0,4)
+        setBestSellers(list.map(fixProductImages))
       }
 
       // Suggested
       if (results[5].status === 'fulfilled') {
         const data = results[5].value
-        setSuggestedProducts(Array.isArray(data) ? data : data?.products || fakeProducts.slice(0,4))
+        const list = Array.isArray(data) ? data : data?.data || data?.products || fakeProducts.slice(0,4)
+        setSuggestedProducts(list.map(fixProductImages))
       }
 
       // Brands
       if (results[6].status === 'fulfilled' && results[6].value?.length > 0) {
-        setBrands(results[6].value)
+        setBrands(results[6].value.map(b => ({ ...b, logo: fixImageUrl(b.logo) })))
       }
 
-      setLoading(false)
+      } catch (e) {
+        console.error('❌ useHomeData fetchAll error:', e)
+      } finally {
+        setLoading(false)
+      }
     }
 
     fetchAll()

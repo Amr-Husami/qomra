@@ -13,7 +13,7 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   SlidersHorizontal, ChevronDown, X,
@@ -21,11 +21,27 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import ProductCard from '../components/ProductCard'
+import { productsApi, taxonomyApi } from '../api/api'
 import {
-  allProducts, filterOptions,
+  filterOptions,
   sortOptions, PRODUCTS_PER_PAGE
 } from '../data/shopData'
 import './ShopPage.css'
+
+function normalizeProduct(p) {
+  // images[] is array of objects { imageUrl, order, ... }
+  const imageObjects = Array.isArray(p.images) ? p.images : []
+  const sortedImages = [...imageObjects].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  const firstImage = sortedImages[0]?.imageUrl || p.imageUrl || p.image || ''
+
+  return {
+    ...p,
+    image: firstImage,
+    images: sortedImages.map(img => img.imageUrl || img.url || img).filter(s => typeof s === 'string'),
+    originalPrice: p.originalPrice || p.price,
+    rating: p.rating || 0,
+  }
+}
 
 // ─── TRANSLATIONS ──────────────────────────────────────────────
 const T = {
@@ -115,9 +131,8 @@ function PageHeader({ t }) {
 // ══════════════════════════════════════════════════════════════
 // FILTER SECTIONS — shared between sidebar & popup
 // ══════════════════════════════════════════════════════════════
-function FilterSections({ filters, setFilters, t, language }) {
+function FilterSections({ filters, setFilters, t, language, categories }) {
   const toggle = (key, value) => {
-    // 🔌 API NOTE: When filters change → call GET /api/products with new params
     setFilters(prev => {
       const arr = prev[key] || []
       return {
@@ -136,7 +151,7 @@ function FilterSections({ filters, setFilters, t, language }) {
       <div className="filter-group">
         <h3 className="filter-group__title">{t.categories}</h3>
         <div className="filter-group__body">
-          {filterOptions.categories.map(cat => (
+          {categories.map(cat => (
             <label key={cat.id} className="filter-checkbox">
               <input
                 type="checkbox"
@@ -222,7 +237,7 @@ function FilterSections({ filters, setFilters, t, language }) {
 // ══════════════════════════════════════════════════════════════
 // FILTER SIDEBAR — desktop right side
 // ══════════════════════════════════════════════════════════════
-function FilterSidebar({ filters, setFilters, t, language }) {
+function FilterSidebar({ filters, setFilters, t, language, categories }) {
   return (
     <aside className="shop-sidebar">
       <FilterSections
@@ -230,6 +245,7 @@ function FilterSidebar({ filters, setFilters, t, language }) {
         setFilters={setFilters}
         t={t}
         language={language}
+        categories={categories}
       />
     </aside>
   )
@@ -238,7 +254,7 @@ function FilterSidebar({ filters, setFilters, t, language }) {
 // ══════════════════════════════════════════════════════════════
 // FILTER POPUP — mobile bottom sheet
 // ══════════════════════════════════════════════════════════════
-function FilterPopup({ filters, setFilters, t, language, onClose }) {
+function FilterPopup({ filters, setFilters, t, language, onClose, categories }) {
   return (
     <div className="filter-popup-overlay" onClick={onClose}>
       <div className="filter-popup" onClick={e => e.stopPropagation()}>
@@ -257,6 +273,7 @@ function FilterPopup({ filters, setFilters, t, language, onClose }) {
             setFilters={setFilters}
             t={t}
             language={language}
+            categories={categories}
           />
         </div>
       </div>
@@ -424,62 +441,73 @@ export default function ShopPage() {
   const [searchParams] = useSearchParams()
 
   // State
-  const [filters,     setFilters]     = useState({
+  const [filters,      setFilters]      = useState({
     categories: searchParams.get('category') ? [searchParams.get('category')] : [],
     prices:     [],
     colors:     [],
     brands:     [],
   })
-  const [sort,        setSort]        = useState('default')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [showFilter,  setShowFilter]  = useState(false)
+  const [sort,         setSort]         = useState('default')
+  const [currentPage,  setCurrentPage]  = useState(1)
+  const [showFilter,   setShowFilter]   = useState(false)
+
+  // API-driven state
+  const [products,     setProducts]     = useState([])
+  const [totalProducts,setTotalProducts]= useState(0)
+  const [totalPages,   setTotalPages]   = useState(1)
+  const [loadingProds, setLoadingProds] = useState(true)
+  const [apiCategories,setApiCategories]= useState(filterOptions.categories)
 
   // Reset to page 1 whenever filters or sort change
   useEffect(() => { setCurrentPage(1) }, [filters, sort])
 
-  // ── FILTER LOGIC ─────────────────────────────────────────────
-  // 🔌 In real app: send filters to API, get back filtered products
-  // For now we filter the fake data locally
-  const filteredProducts = useMemo(() => {
-    let result = [...allProducts]
-
-    // Filter by category
-    if (filters.categories.length > 0) {
-      result = result.filter(p => filters.categories.includes(p.category))
-    }
-
-    // Filter by price range
-    if (filters.prices.length > 0) {
-      result = result.filter(p => {
-        return filters.prices.some(priceId => {
-          const range = filterOptions.prices.find(pr => pr.id === priceId)
-          return range && p.price >= range.min && p.price <= range.max
-        })
+  // Fetch real categories once for the filter sidebar
+  useEffect(() => {
+    taxonomyApi.getCategories()
+      .then(cats => {
+        if (cats?.length > 0) {
+          setApiCategories(cats.map(c => ({
+            id: c.slug,
+            nameAr: c.titleAr || c.nameAr,
+            nameEn: c.titleEn || c.nameEn,
+          })))
+        }
       })
-    }
+      .catch(() => {})
+  }, [])
 
-    // Filter by color
-    if (filters.colors.length > 0) {
-      result = result.filter(p => filters.colors.includes(p.colors))
-    }
+  // Fetch products from API whenever filters/sort/page change
+  const fetchProducts = useCallback(() => {
+    const params = { page: currentPage, limit: PRODUCTS_PER_PAGE }
 
-    // Filter by brand
-    if (filters.brands.length > 0) {
-      result = result.filter(p => filters.brands.includes(p.brand))
-    }
+    if (filters.categories.length > 0) params.category = filters.categories[0]
+    if (sort !== 'default') params.sort = sort
 
-    // Sort
-    if (sort === 'price-asc')  result.sort((a, b) => a.price - b.price)
-    if (sort === 'price-desc') result.sort((a, b) => b.price - a.price)
-    if (sort === 'rating')     result.sort((a, b) => b.rating - a.rating)
+    setLoadingProds(true)
+    productsApi.getProducts(params)
+      .then(res => {
+        const list = res.data || res.products || []
+        let normalized = list.map(normalizeProduct)
 
-    return result
-  }, [filters, sort])
+        // Client-side price filter (API may not support it)
+        if (filters.prices.length > 0) {
+          normalized = normalized.filter(p =>
+            filters.prices.some(priceId => {
+              const range = filterOptions.prices.find(pr => pr.id === priceId)
+              return range && p.price >= range.min && p.price <= range.max
+            })
+          )
+        }
 
-  // ── PAGINATION ───────────────────────────────────────────────
-  const totalPages    = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE)
-  const start         = (currentPage - 1) * PRODUCTS_PER_PAGE
-  const pageProducts  = filteredProducts.slice(start, start + PRODUCTS_PER_PAGE)
+        setProducts(normalized)
+        setTotalProducts(res.pagination?.total || res.total || normalized.length)
+        setTotalPages(res.pagination?.totalPages || res.totalPages || 1)
+      })
+      .catch(() => { setProducts([]); setTotalProducts(0); setTotalPages(1) })
+      .finally(() => setLoadingProds(false))
+  }, [filters, sort, currentPage])
+
+  useEffect(() => { fetchProducts() }, [fetchProducts])
 
   // Close filter popup when window resizes to desktop
   useEffect(() => {
@@ -503,8 +531,8 @@ export default function ShopPage() {
 
             {/* Top bar */}
             <TopBar
-              total={filteredProducts.length}
-              showing={Math.min(PRODUCTS_PER_PAGE, pageProducts.length)}
+              total={totalProducts}
+              showing={products.length}
               sort={sort}
               setSort={setSort}
               t={t}
@@ -513,12 +541,16 @@ export default function ShopPage() {
             />
 
             {/* Products grid OR empty state */}
-            {pageProducts.length === 0 ? (
+            {loadingProds ? (
+              <div className="shop-loading">
+                <div className="hp-loading__spinner" />
+              </div>
+            ) : products.length === 0 ? (
               <EmptyState t={t} />
             ) : (
               <>
                 <div className="shop-grid">
-                  {pageProducts.map(product => (
+                  {products.map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
@@ -542,6 +574,7 @@ export default function ShopPage() {
             setFilters={setFilters}
             t={t}
             language={language}
+            categories={apiCategories}
           />
 
         </div>
@@ -555,6 +588,7 @@ export default function ShopPage() {
           t={t}
           language={language}
           onClose={() => setShowFilter(false)}
+          categories={apiCategories}
         />
       )}
 

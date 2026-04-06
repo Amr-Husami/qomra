@@ -97,7 +97,7 @@
   justify-content: center;
   cursor: pointer;
   color: var(--text);
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
@@ -105,6 +105,8 @@
   background: var(--primary);
   color: #fff;
   border-color: var(--primary);
+  transform: scale(1.22);
+  box-shadow: 0 4px 14px rgba(232, 96, 122, 0.4);
 }
 
 .pcard__action-btn--active {
