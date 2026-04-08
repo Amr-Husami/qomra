@@ -9,6 +9,7 @@ import {
   ChevronLeft, ChevronRight, Maximize2,
   Shield, Truck, ThumbsUp, RotateCcw, X
 } from 'lucide-react'
+import { FaFacebook, FaInstagram, FaTwitter, FaPinterest } from 'react-icons/fa'
 import { useApp } from '../context/AppContext'
 import ProductCard from '../components/ProductCard'
 import { productsApi } from '../api/api'
@@ -412,10 +413,10 @@ function ProductInfo({ product, variants, t, language }) {
       <div className="pd-share">
         <span>{t.share}</span>
         <div className="pd-share-icons">
-          <a href="#" className="pd-share-icon pd-share-icon--fb">f</a>
-          <a href="#" className="pd-share-icon pd-share-icon--tw">𝕏</a>
-          <a href="#" className="pd-share-icon pd-share-icon--pin">𝕡</a>
-          <a href="#" className="pd-share-icon pd-share-icon--ig">◎</a>
+          <a href="#" className="pd-share-icon pd-share-icon--fb" aria-label="Facebook"><FaFacebook /></a>
+          <a href="#" className="pd-share-icon pd-share-icon--tw" aria-label="Twitter"><FaTwitter /></a>
+          <a href="#" className="pd-share-icon pd-share-icon--pin" aria-label="Pinterest"><FaPinterest /></a>
+          <a href="#" className="pd-share-icon pd-share-icon--ig" aria-label="Instagram"><FaInstagram /></a>
         </div>
       </div>
     </div>
@@ -426,9 +427,16 @@ function ProductInfo({ product, variants, t, language }) {
 function InfoTab({ product, t, language }) {
   const desc = language === 'ar' ? product.descriptionAr : product.descriptionEn
 
+  // Detect if desc contains HTML tags — if so render as rich HTML, otherwise plain text
+  const isHtml = desc && /<[a-z][\s\S]*>/i.test(desc)
+
   return (
     <div className="tab-content">
-      {desc && <p className="pd-desc">{desc}</p>}
+      {desc && (
+        isHtml
+          ? <div className="pd-rich-desc" dangerouslySetInnerHTML={{ __html: desc }} />
+          : <p className="pd-desc">{desc}</p>
+      )}
 
       <h3 className="tab-section-title">{t.productDetails}</h3>
       <ul className="pd-bullets">

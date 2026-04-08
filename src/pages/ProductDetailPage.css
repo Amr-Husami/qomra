@@ -424,21 +424,20 @@
 .pd-share > span { font-size: 13px; color: var(--text-secondary); }
 .pd-share-icons { display: flex; gap: 8px; }
 .pd-share-icon {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16px;
   color: #fff;
   text-decoration: none;
   transition: opacity 0.2s, transform 0.2s;
 }
 .pd-share-icon:hover { opacity: 0.85; transform: scale(1.1); }
 .pd-share-icon--fb  { background: #1877f2; }
-.pd-share-icon--tw  { background: #000; font-size: 11px; }
+.pd-share-icon--tw  { background: #000; }
 .pd-share-icon--pin { background: #e60023; }
 .pd-share-icon--ig  { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
 
@@ -487,6 +486,49 @@
   text-align: right;
 }
 [dir="ltr"] .pd-desc { text-align: left; }
+
+/* Rich HTML description — when backend sends HTML content */
+.pd-rich-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 28px;
+  text-align: right;
+}
+[dir="ltr"] .pd-rich-desc { text-align: left; }
+.pd-rich-desc h1, .pd-rich-desc h2, .pd-rich-desc h3 {
+  color: var(--text);
+  font-weight: 800;
+  margin: 16px 0 8px;
+}
+.pd-rich-desc h1 { font-size: 20px; }
+.pd-rich-desc h2 { font-size: 17px; }
+.pd-rich-desc h3 { font-size: 15px; }
+.pd-rich-desc p  { margin-bottom: 10px; }
+.pd-rich-desc ul, .pd-rich-desc ol {
+  padding-inline-start: 20px;
+  margin-bottom: 12px;
+}
+.pd-rich-desc ul { list-style: disc; }
+.pd-rich-desc ol { list-style: decimal; }
+.pd-rich-desc li { margin-bottom: 4px; }
+.pd-rich-desc strong, .pd-rich-desc b { color: var(--text); font-weight: 700; }
+.pd-rich-desc a { color: var(--primary); text-decoration: underline; }
+.pd-rich-desc img { max-width: 100%; border-radius: 8px; margin: 8px 0; }
+.pd-rich-desc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+.pd-rich-desc th, .pd-rich-desc td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: right;
+}
+[dir="ltr"] .pd-rich-desc th,
+[dir="ltr"] .pd-rich-desc td { text-align: left; }
+.pd-rich-desc th { background: var(--bg-topbar); font-weight: 700; color: var(--text); }
 
 .tab-section-title {
   font-size: 18px;

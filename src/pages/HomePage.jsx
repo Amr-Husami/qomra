@@ -173,21 +173,37 @@ function SectionHeader({ title, viewAllLink, viewAllText }) {
 // SECTION: Shop By Category
 // ══════════════════════════════════════════════════════════════
 function ShopByCategory({ t, language, categories }) {
+  const sliderRef = useRef(null)
+
+  const scroll = (dir) => {
+    const el = sliderRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * 220, behavior: 'smooth' })
+  }
+
   return (
     <section className="hp-section">
       <div className="hp-container">
         <SectionHeader title={t.shopByCategory} />
-        <div className="cat-grid">
-          {categories.map(cat => (
-            <Link key={cat.id} to={`/shop?category=${cat.slug}`} className="cat-card">
-              <div className="cat-card__img-wrap" style={{ background: cat.bg }}>
-                <img src={cat.image} alt={cat.nameAr} className="cat-card__img" />
-              </div>
-              <p className="cat-card__name">
-                {language === 'ar' ? cat.nameAr : cat.nameEn}
-              </p>
-            </Link>
-          ))}
+        <div className="cat-carousel-wrap">
+          <button className="cat-carousel-btn cat-carousel-btn--prev" onClick={() => scroll(-1)} aria-label="prev">
+            <ChevronRight size={20} />
+          </button>
+          <div className="cat-grid" ref={sliderRef}>
+            {categories.map(cat => (
+              <Link key={cat.id} to={`/shop?category=${cat.slug}`} className="cat-card">
+                <div className="cat-card__img-wrap" style={{ background: cat.bg }}>
+                  <img src={cat.image} alt={cat.nameAr} className="cat-card__img" />
+                </div>
+                <p className="cat-card__name">
+                  {language === 'ar' ? cat.nameAr : cat.nameEn}
+                </p>
+              </Link>
+            ))}
+          </div>
+          <button className="cat-carousel-btn cat-carousel-btn--next" onClick={() => scroll(1)} aria-label="next">
+            <ChevronLeft size={20} />
+          </button>
         </div>
       </div>
     </section>
