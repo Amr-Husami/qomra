@@ -49,7 +49,8 @@ import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import OrderSuccessPage from './pages/OrderSuccessPage'
 import ProfilePage from './pages/ProfilePage'
-import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyPage } from './pages/AuthPages'
+import { LoginPage, SignupPage, ForgotPasswordPage, ResetPasswordPage, VerifyPage, VerifyResetPage } from './pages/AuthPages'
+import DealsPage from './pages/DealsPage'
 
 // ── Admin ─────────────────────────────────────────────────────
 import AdminLayout from './pages/admin/AdminLayout'
@@ -83,11 +84,13 @@ function StoreApp() {
         <Route path="/cart"          element={<CartPage />} />
         <Route path="/checkout"      element={<CheckoutPage />} />
         <Route path="/order-success" element={<OrderSuccessPage />} />
+        <Route path="/deals"         element={<DealsPage />} />
         <Route path="/login"           element={<LoginPage />} />
         <Route path="/signup"          element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password"  element={<ResetPasswordPage />} />
         <Route path="/verify"          element={<VerifyPage />} />
+        <Route path="/verify-reset"    element={<VerifyResetPage />} />
         <Route path="*"              element={<NotFoundPage />} />
       </Routes>
       <Footer />

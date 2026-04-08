@@ -83,6 +83,9 @@
 /* Base HTML settings */
 html {
   scroll-behavior: smooth;
+  /* Prevent horizontal overflow from creating RTL left-side gap */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -95,6 +98,15 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* Prevent RTL horizontal overflow gap */
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* React root must fill full width */
+#root {
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* When language is English, use the English font */
@@ -228,4 +240,23 @@ button {
 [data-theme="dark"] .auth-card {
   background: var(--bg);
   border-color: var(--primary);
+}
+
+/* ══════════════════════════════════════════
+   MOBILE GLOBAL OVERFLOW FIX
+   RTL mode can shift content left if any element overflows.
+   This ensures the page always fills 100% viewport width.
+   ══════════════════════════════════════════ */
+@media (max-width: 767px) {
+  html, body, #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* All page sections should never exceed viewport */
+  main, section, article, aside, nav, header, footer {
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
 }

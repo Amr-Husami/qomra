@@ -93,6 +93,11 @@ export const authApi = {
   changePassword: (currentPassword, newPassword) =>
     request('/api/auth/change-password', 'PATCH', { currentPassword, newPassword }, true),
 
+  // Verify email after signup → POST /api/auth/verify-email
+  // Body: { code } — the OTP sent to email after registration
+  verifyEmail: (code) =>
+    request('/api/auth/verify-email', 'POST', { code }),
+
   // Forgot password step 1 → POST /api/auth/reset-password
   // Body: { email } — sends reset link to email
   requestPasswordReset: (email) =>
@@ -218,9 +223,9 @@ export const bannersApi = {
 // ══════════════════════════════════════════════════════════════
 export const brandsApi = {
 
-  // Get brand logos → GET /api/brand-carousel
-  // Returns: [{ id, brandName, logo, order, isActive }]
-  getBrands: () => request('/api/brand-carousel'),
+  // Get brand logos → GET /api/brands
+  // Returns: [{ id, name, nameAr, nameEn, logoUrl, slug, isActive }]
+  getBrands: () => request('/api/brands'),
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -232,10 +237,12 @@ export const cartApi = {
   getCart: () => request('/api/cart', 'GET', null, true),
 
   // Add to cart → POST /api/cart 🔒
-  // Body: { productId, variantId, quantity }
-  // ⚠️ variantId = the specific color+size ID from getVariants()
-  addToCart: (productId, variantId, quantity = 1) =>
-    request('/api/cart', 'POST', { productId, variantId, quantity }, true),
+  // Body: { productId, quantity } — only include variantId if it exists
+  addToCart: (productId, variantId, quantity = 1) => {
+    const body = { productId, quantity }
+    if (variantId) body.variantId = variantId   // never send null — causes backend 500
+    return request('/api/cart', 'POST', body, true)
+  },
 
   // Update qty → PATCH /api/cart/:cartItemId 🔒
   // Body: { quantity }
@@ -256,8 +263,8 @@ export const cartApi = {
 export const ordersApi = {
 
   // Create order from cart → POST /api/orders 🔒
-  // No body — backend reads from cart automatically
-  createOrder: () => request('/api/orders', 'POST', null, true),
+  // Optionally pass address/paymentMethod if backend requires them
+  createOrder: (extraData = {}) => request('/api/orders', 'POST', Object.keys(extraData).length ? extraData : null, true),
 
   // Get my orders → GET /api/orders/my 🔒
   // Returns: [{ id, status, total, items, createdAt }]

@@ -408,6 +408,17 @@
 [dir="ltr"] .cart-feature__text p { text-align: left; }
 
 /* ══════════════════════════════════════════
+   DARK MODE
+   ══════════════════════════════════════════ */
+[data-theme="dark"] .free-shipping-banner {
+  background: linear-gradient(135deg, #0a2a10, #122a10);
+  border-color: #2a5a2a;
+}
+[data-theme="dark"] .fsb-text strong { color: #6fcf97; }
+[data-theme="dark"] .fsb-text span   { color: #52a575; }
+[data-theme="dark"] .ci-remove:hover { background: rgba(232, 96, 122, 0.12); }
+
+/* ══════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════ */
 @media (max-width: 1024px) {

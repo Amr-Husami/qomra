@@ -275,8 +275,17 @@
 
 /* Mobile (< 768px) */
 @media (max-width: 767px) {
+  .footer {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .ft-container {
+    padding: 0 20px;
+  }
+
   .footer__grid {
-    /* Single column on mobile */
     grid-template-columns: 1fr;
     gap: 24px;
     padding: 36px 0 28px;

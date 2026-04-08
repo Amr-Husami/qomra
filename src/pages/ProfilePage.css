@@ -347,6 +347,7 @@
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
 }
 [dir="ltr"] .orders-filters { justify-content: flex-start; }
 
@@ -424,13 +425,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 60px 20px;
+  gap: 16px;
+  padding: 48px 20px;
   text-align: center;
 }
 .orders-empty__icon { position: relative; color: var(--text-placeholder); opacity: 0.5; }
 .orders-empty__x { position: absolute; top: -4px; inset-inline-end: -4px; font-size: 20px; }
 .orders-empty h3 { font-size: 17px; font-weight: 800; color: var(--text); }
+.orders-empty__btn {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  padding: 13px 32px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.orders-empty__btn:hover { background: var(--primary-dark); }
 
 /* Order detail */
 .orders-back-btn {
@@ -934,6 +951,49 @@
 }
 
 /* ══════════════════════════════════════════
+   DARK MODE OVERRIDES
+   ══════════════════════════════════════════ */
+[data-theme="dark"] .points-hero {
+  background: linear-gradient(135deg, #1a1f2e 0%, #1e2540 100%);
+}
+[data-theme="dark"] .profile-nav-item--active {
+  background: rgba(232, 96, 122, 0.15);
+}
+[data-theme="dark"] .profile-nav-item--logout:hover {
+  background: rgba(231, 76, 60, 0.12);
+}
+[data-theme="dark"] .profile-nav-item__badge {
+  background: #3a2e00;
+  color: #f0c040;
+}
+[data-theme="dark"] .pf-success {
+  background: rgba(39, 174, 96, 0.12);
+}
+[data-theme="dark"] .pf-error {
+  background: rgba(231, 76, 60, 0.12);
+}
+[data-theme="dark"] .order-status-badge--processing {
+  background: rgba(133, 100, 4, 0.25);
+  color: #f0c040;
+}
+[data-theme="dark"] .order-status-badge--cancelled {
+  background: rgba(114, 28, 36, 0.25);
+  color: #f87171;
+}
+[data-theme="dark"] .orders-detail-btn:hover {
+  background: rgba(232, 96, 122, 0.12);
+}
+[data-theme="dark"] .addr-add-btn:hover {
+  background: rgba(232, 96, 122, 0.12);
+}
+[data-theme="dark"] .addr-dropdown__delete:hover {
+  background: rgba(231, 76, 60, 0.15) !important;
+}
+[data-theme="dark"] .delete-dialog__icon {
+  background: rgba(231, 76, 60, 0.15);
+}
+
+/* ══════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════ */
 @media (max-width: 1024px) {
@@ -943,35 +1003,182 @@
 }
 
 @media (max-width: 767px) {
-  .profile-container { padding: 16px 16px 80px; }
-  .profile-layout { grid-template-columns: 1fr; }
-  .profile-sidebar { position: static; }
+  /* ── Container & layout ─────────────── */
+  .profile-container {
+    padding: 0 0 80px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .profile-layout {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    width: 100%;
+    max-width: 100%;
+  }
 
-  /* Mobile nav: horizontal scroll tabs */
+  /* ── Sidebar: sticky tab bar ─────────── */
+  .profile-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: 0;
+    background: var(--bg);
+    /* Subtle shadow when sticky */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  /* Hide the title — PageHeader already shows "حسابي" */
+  .profile-sidebar__title {
+    display: none;
+  }
+
+  /* ── Nav: scrollable underline tabs ─── */
   .profile-nav {
     flex-direction: row;
     overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 4px;
+    gap: 0;
+    padding: 0 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
+  .profile-nav::-webkit-scrollbar { display: none; }
+
   .profile-nav-item {
     flex-direction: column;
     justify-content: center;
     align-items: center;
     white-space: nowrap;
-    min-width: 80px;
-    padding: 10px 12px;
-    font-size: 11px;
+    min-width: 0;
+    flex: 0 0 auto;
+    padding: 10px 12px 8px;
+    font-size: 10px;
+    font-weight: 600;
     gap: 4px;
+    border-radius: 0;
+    width: auto;
+    border-bottom: 2.5px solid transparent;
+    color: var(--text-secondary);
+    transition: color 0.15s, border-color 0.15s;
   }
-  .profile-nav-item--logout { margin-top: 0; border-top: none; padding-top: 10px; }
+  .profile-nav-item:hover {
+    background: transparent;
+    color: var(--primary);
+  }
+  .profile-nav-item--active {
+    background: transparent;
+    color: var(--primary);
+    font-weight: 700;
+    border-bottom-color: var(--primary);
+  }
+  .profile-nav-item--logout {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 10px;
+    color: #e74c3c;
+  }
   .profile-nav-item__badge { display: none; }
+  .profile-nav-item__icon { opacity: 1; }
 
+  /* ── Content: no card look on mobile ── */
+  .profile-content {
+    border: none;
+    border-radius: 0;
+    padding: 20px 16px 24px;
+    min-height: unset;
+  }
+
+  /* ── Form fields ─────────────────────── */
   .pf-row-2 { grid-template-columns: 1fr; }
   .pf-row-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .coupons-grid { grid-template-columns: repeat(2, 1fr); }
+  .pf-tab__title { font-size: 15px; }
+
+  /* ── Orders filters: horizontal scroll on mobile ── */
+  .orders-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .orders-filters::-webkit-scrollbar { display: none; }
+  .orders-filter-btn { flex-shrink: 0; }
+
+  /* ── Empty state button ──────────────── */
+  .orders-empty__btn { max-width: 100%; }
+  .orders-empty { padding: 36px 16px; }
+
+  /* ── Orders: card layout on mobile ───── */
+  .orders-table thead { display: none; }
+  .orders-table, .orders-table tbody, .orders-table tr, .orders-table td {
+    display: block;
+    width: 100%;
+  }
+  .orders-table tr {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    background: var(--bg);
+  }
+  .orders-table tr:hover td { background: transparent; }
+  .orders-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 5px 0;
+    font-size: 13px;
+    text-align: right;
+  }
+  .orders-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--text);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
   .order-meta-bar { grid-template-columns: repeat(2, 1fr); }
   .order-steps { gap: 0; }
+
+  /* ── Points / Check-in ───────────────── */
   .checkin-streak { gap: 4px; }
   .streak-day__icon { font-size: 18px; }
+
+  /* ── Coupons ─────────────────────────── */
+  .coupons-grid { grid-template-columns: 1fr; }
+
+  /* ── Points hero ─────────────────────── */
+  .points-num { font-size: 36px; }
+  .points-label { font-size: 16px; }
+  .points-coin { font-size: 28px; }
+}
+
+
+/* WhatsApp button inside order detail */
+.order-whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25D366;
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+.order-whatsapp-btn:hover { background: #20b858; transform: translateY(-2px); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.points-egp-value {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 6px;
 }

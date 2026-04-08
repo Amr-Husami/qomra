@@ -227,8 +227,10 @@ function ShopByAge({ t, language, ageGroups }) {
           <div className="age-slider" ref={sliderRef}>
             {(ageGroups || []).map((group, index) => (
               <Link key={group.id ?? group._id ?? group.slug ?? index} to={`/shop?age=${group.slug}`} className="age-card">
-                <div className="age-card__circle" style={{ background: group.bg }}>
-                  <img src={group.image} alt={group.labelAr} className="age-card__img" />
+                <div className="age-card__flower-outer">
+                  <div className="age-card__circle" style={{ background: group.bg }}>
+                    <img src={group.image} alt={group.labelAr} className="age-card__img" />
+                  </div>
                 </div>
                 <p className="age-card__label">
                   {((language === 'ar' ? group.labelAr : group.labelEn) || '')
@@ -348,15 +350,18 @@ function PromoBannersSection({ language }) {
 // ══════════════════════════════════════════════════════════════
 // SECTION: Best Brands
 // ══════════════════════════════════════════════════════════════
-function BestBrands({ t, brands }) {
+function BestBrands({ t, brands, language }) {
   return (
     <section className="hp-section">
       <div className="hp-container">
         <SectionHeader title={t.bestBrands} />
         <div className="brands-row">
           {(brands || []).map(brand => (
-            <div key={brand.id} className="brand-chip" style={{ background: brand.bg }}>
-              {brand.name}
+            <div key={brand.id} className="brand-chip">
+              {brand.logo
+                ? <img src={brand.logo} alt={language === 'ar' ? brand.nameAr : brand.nameEn} className="brand-chip__logo" />
+                : <span>{language === 'ar' ? brand.nameAr : brand.nameEn}</span>
+              }
             </div>
           ))}
         </div>
@@ -617,7 +622,7 @@ export default function HomePage() {
       />
 
       {/* 9. Best Brands — uses real brands from API */}
-      <BestBrands t={t} brands={brands} />
+      <BestBrands t={t} brands={brands} language={language} />
 
       {/* 10. Newsletter Signup */}
       <NewsletterSection t={t} />

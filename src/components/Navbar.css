@@ -579,6 +579,9 @@
   background: #fff0f3;
   border-color: var(--primary);
 }
+[data-theme="dark"] .s-item__del:hover {
+  background: rgba(232, 96, 122, 0.12);
+}
 
 /* Empty state (no items) */
 .empty-state {
@@ -849,9 +852,18 @@
     display: none !important;
   }
 
-  /* Show the mobile nav */
+  /* Show the mobile nav — full width, no overflow */
   .mobile-nav {
     display: block;
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  .navbar-wrapper {
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
   }
 
   /* Make sidebar full-width on mobile */

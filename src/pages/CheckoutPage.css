@@ -479,3 +479,67 @@
   .co-pay-methods { grid-template-columns: repeat(2, 1fr); }
   .co-section { padding: 18px 14px; }
 }
+
+/* ── Dark Mode ─────────────────────────── */
+[data-theme="dark"] .co-item__del:hover {
+  background: rgba(232, 96, 122, 0.12);
+}
+[data-theme="dark"] .co-login-alert {
+  background: rgba(232, 96, 122, 0.08);
+  border-color: rgba(232, 96, 122, 0.25);
+}
+[data-theme="dark"] .co-pay-btn--active {
+  background: rgba(46, 125, 50, 0.2);
+  border-color: #4caf50;
+}
+
+/* ── Coins redemption ───────────────────── */
+.co-coins-box {
+  background: linear-gradient(135deg, #fff9e6, #fff3cd);
+  border: 1.5px solid #f5a623;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+[data-theme="dark"] .co-coins-box {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: #f5a623;
+}
+.co-coins-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #856404;
+  cursor: pointer;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+[dir="ltr"] .co-coins-label { flex-direction: row; }
+[data-theme="dark"] .co-coins-label { color: #f5a623; }
+
+.co-coins-earn {
+  font-size: 12px;
+  color: #856404;
+  font-weight: 600;
+  text-align: right;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #fff9e6;
+  border-radius: 8px;
+}
+[dir="ltr"] .co-coins-earn { text-align: left; }
+[data-theme="dark"] .co-coins-earn { background: rgba(245,166,35,0.1); color: #f5a623; }
+
+/* Dark mode for hardcoded green banners */
+[data-theme="dark"] .co-free-ship {
+  background: rgba(46, 125, 50, 0.15);
+  border-color: rgba(76, 175, 80, 0.3);
+  color: #81c784;
+}
+[data-theme="dark"] .co-login-alert {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: var(--border);
+  color: var(--text);
+}

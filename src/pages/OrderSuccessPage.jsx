@@ -1,71 +1,125 @@
 /**
  * OrderSuccessPage.jsx
- * ─────────────────────────────────────────────────────────────
- * Shows after a successful order:
- *  1. Thank you header (🍼 شكراً لطلبك!)
- *  2. Order summary bar (order#, date, phone, total, payment)
- *  3. Order details table (products + prices)
- *  4. Delivery address
- *  5. Features strip
- * ─────────────────────────────────────────────────────────────
+ *  1. Thank you header
+ *  2. Order status tracker (stepper)
+ *  3. Order summary bar
+ *  4. Order details table
+ *  5. Delivery address
+ *  6. WhatsApp + Continue shopping buttons
+ *  7. Features strip
  */
 
+import { useEffect, useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { Shield, Truck, ThumbsUp, RotateCcw } from 'lucide-react'
+import { Shield, Truck, ThumbsUp, RotateCcw, CheckCircle2, Clock, MessageCircle } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { ordersApi } from '../api/api'
 import './OrderSuccessPage.css'
+
+// ── Store WhatsApp number (change to real number) ─────────────
+const STORE_WHATSAPP = '201000000000' // e.g. Egypt: 20 + number without leading 0
 
 const T = {
   ar: {
-    thanks: '🍼 شكراً لطلبك!',
+    thanks:   '🍼 شكراً لطلبك!',
     subtitle: 'اختيارك يعني راحة وسعادة لطفل صغير 💗',
-    confirm: 'تم استلام طلبك بنجاح !',
-    orderNum: 'رقم الطلب',
+    confirm:  'تم استلام طلبك بنجاح!',
+    orderNum:  'رقم الطلب',
     orderDate: 'تاريخ الطلب',
-    phone: 'رقم الهاتف',
-    totalLabel: 'الاجمالي',
+    phone:     'رقم الهاتف',
+    totalLabel:'الاجمالي',
     payMethod: 'طريقة الدفع',
     detailsTitle: 'تفاصيل الطلب :',
-    products: 'المنتجات',
-    prices: 'الاسعار',
-    priceLabel: 'السعر :',
+    products:  'المنتجات',
+    prices:    'الاسعار',
+    priceLabel:'السعر :',
     shippingLabel: 'التوصيل :',
     payMethodLabel: 'طريقة الدفع :',
-    totalRow: 'الإجمالي :',
+    totalRow:  'الإجمالي :',
     addressTitle: 'عنوان التوصيل :',
     backToShop: 'متابعة التسوق',
+    whatsapp:  'تواصل معنا واتساب',
+    whatsappMsg: 'مرحباً، لدي استفسار عن طلبي رقم #',
+    trackTitle: 'تتبع طلبك',
+    stepOrdered:   'تم الطلب',
+    stepProcessing:'قيد التنفيذ',
+    stepShipped:   'تم الشحن',
+    stepDelivered: 'تم التسليم',
     features: [
-      { icon: <Shield size={26} />,   title: 'دفع آمن',            desc: 'طرق دفع محمية عبر التطبيقات والبنوك المحلية' },
-      { icon: <ThumbsUp size={26} />, title: 'شهادات موثوقة',     desc: 'منتجات معتمدة من جهات موثوقة' },
-      { icon: <Truck size={26} />,    title: 'شحن سريع',           desc: 'توصيل سريع وآمن لطلبك أينما كنت' },
-      { icon: <RotateCcw size={26} />,title: 'إرجاع خلال 30 يوم', desc: 'سياسة إرجاع سهلة' },
+      { icon: <Shield size={26} />,    title: 'دفع آمن',            desc: 'طرق دفع محمية عبر التطبيقات والبنوك المحلية' },
+      { icon: <ThumbsUp size={26} />,  title: 'شهادات موثوقة',     desc: 'منتجات معتمدة من جهات موثوقة' },
+      { icon: <Truck size={26} />,     title: 'شحن سريع',           desc: 'توصيل سريع وآمن لطلبك أينما كنت' },
+      { icon: <RotateCcw size={26} />, title: 'إرجاع خلال 30 يوم', desc: 'سياسة إرجاع سهلة' },
     ],
   },
   en: {
-    thanks: '🍼 Thank You for Your Order!',
+    thanks:   '🍼 Thank You for Your Order!',
     subtitle: 'Your choice means comfort and happiness for a little one 💗',
-    confirm: 'Your order has been received successfully!',
-    orderNum: 'Order Number',
+    confirm:  'Your order has been received successfully!',
+    orderNum:  'Order Number',
     orderDate: 'Order Date',
-    phone: 'Phone',
-    totalLabel: 'Total',
+    phone:     'Phone',
+    totalLabel:'Total',
     payMethod: 'Payment Method',
     detailsTitle: 'Order Details:',
-    products: 'Products',
-    prices: 'Prices',
-    priceLabel: 'Price:',
+    products:  'Products',
+    prices:    'Prices',
+    priceLabel:'Price:',
     shippingLabel: 'Shipping:',
     payMethodLabel: 'Payment Method:',
-    totalRow: 'Total:',
+    totalRow:  'Total:',
     addressTitle: 'Delivery Address:',
     backToShop: 'Continue Shopping',
+    whatsapp:  'Contact Us on WhatsApp',
+    whatsappMsg: 'Hello, I have a question about my order #',
+    trackTitle: 'Track Your Order',
+    stepOrdered:   'Order Placed',
+    stepProcessing:'Processing',
+    stepShipped:   'Shipped',
+    stepDelivered: 'Delivered',
     features: [
-      { icon: <Shield size={26} />,   title: 'Safe Payment',    desc: 'Secure payment via apps and local banks' },
-      { icon: <ThumbsUp size={26} />, title: 'Trusted Reviews', desc: 'Certified products' },
-      { icon: <Truck size={26} />,    title: 'Fast Shipping',   desc: 'Fast and safe delivery' },
-      { icon: <RotateCcw size={26} />,title: '30-Day Returns',  desc: 'Easy return policy' },
+      { icon: <Shield size={26} />,    title: 'Safe Payment',    desc: 'Secure payment via apps and local banks' },
+      { icon: <ThumbsUp size={26} />,  title: 'Trusted Reviews', desc: 'Certified products' },
+      { icon: <Truck size={26} />,     title: 'Fast Shipping',   desc: 'Fast and safe delivery' },
+      { icon: <RotateCcw size={26} />, title: '30-Day Returns',  desc: 'Easy return policy' },
     ],
   },
+}
+
+// ── Status → step index ───────────────────────────────────────
+const STATUS_STEP = {
+  PENDING:    0,
+  PROCESSING: 1,
+  SHIPPED:    2,
+  DELIVERED:  3,
+}
+
+function OrderTracker({ status, t }) {
+  const steps = [t.stepOrdered, t.stepProcessing, t.stepShipped, t.stepDelivered]
+  const activeStep = STATUS_STEP[(status || 'PENDING').toUpperCase()] ?? 0
+
+  return (
+    <div className="order-tracker">
+      <h2 className="success-section-title">{t.trackTitle}</h2>
+      <div className="tracker-steps">
+        {steps.map((label, i) => {
+          const done    = i <= activeStep
+          const current = i === activeStep
+          return (
+            <div key={i} className="tracker-step">
+              <div className={`tracker-step__circle ${done ? 'tracker-step__circle--done' : ''} ${current ? 'tracker-step__circle--current' : ''}`}>
+                {done ? <CheckCircle2 size={18} /> : <Clock size={16} />}
+              </div>
+              <p className={`tracker-step__label ${!done ? 'tracker-step__label--muted' : ''}`}>{label}</p>
+              {i < steps.length - 1 && (
+                <div className={`tracker-step__line ${i < activeStep ? 'tracker-step__line--done' : ''}`} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export default function OrderSuccessPage() {
@@ -73,28 +127,46 @@ export default function OrderSuccessPage() {
   const t = T[language]
   const location = useLocation()
 
-  // Get order data passed from CheckoutPage via navigate state
   const state = location.state || {}
   const {
-    orderNumber = Math.floor(Math.random() * 9000) + 1000,
-    total = '200.00',
+    orderId,
+    orderNumber: stateOrderNumber,
+    total    = '0.00',
     payMethod = language === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery',
-    form = {},
-    items = [],
+    form     = {},
+    items    = [],
   } = state
 
-  // Format today's date in Arabic style
-  const today = new Date()
-  const dateAr = today.toLocaleDateString('ar-SY', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  })
-  const dateEn = today.toLocaleDateString('en-US', {
-    year: 'numeric', month: 'long', day: 'numeric'
-  })
-  const dateStr = language === 'ar' ? dateAr : dateEn
+  const [orderStatus, setOrderStatus] = useState('PENDING')
+  const [orderNumber, setOrderNumber] = useState(stateOrderNumber || '—')
 
-  const shippingCost = parseFloat(total) >= 1000000 ? 0 : 50
-  const productTotal = parseFloat(total)
+  // Fetch real order status if we have an orderId
+  useEffect(() => {
+    if (!orderId) return
+    ordersApi.getMyOrders()
+      .then(data => {
+        const list  = Array.isArray(data) ? data : (data?.orders || data?.data || [])
+        const found = list.find(o => o.id === orderId)
+        if (found) {
+          setOrderStatus(found.status || 'PENDING')
+          if (found.orderNumber) setOrderNumber(found.orderNumber)
+        }
+      })
+      .catch(() => {})
+  }, [orderId])
+
+  const today   = new Date()
+  const dateStr = today.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  })
+
+  const productTotal  = parseFloat(total) || 0
+  const shippingCost  = productTotal >= 1000000 ? 0 : 50
+  const grandTotal    = productTotal + shippingCost
+
+  // WhatsApp link
+  const waMsg = encodeURIComponent(`${t.whatsappMsg}${orderNumber}`)
+  const waLink = `https://wa.me/${STORE_WHATSAPP}?text=${waMsg}`
 
   return (
     <main className="success-page">
@@ -107,7 +179,10 @@ export default function OrderSuccessPage() {
           <p className="success-hero__confirm">{t.confirm}</p>
         </div>
 
-        {/* 2. Order Summary Bar */}
+        {/* 2. Order Status Tracker */}
+        <OrderTracker status={orderStatus} t={t} />
+
+        {/* 3. Order Summary Bar */}
         <div className="success-summary-bar">
           <div className="ssb-item">
             <span className="ssb-label">{t.orderNum} :</span>
@@ -119,11 +194,11 @@ export default function OrderSuccessPage() {
           </div>
           <div className="ssb-item">
             <span className="ssb-label">{t.phone} :</span>
-            <span className="ssb-value">{form.phone || '+963994240911'}</span>
+            <span className="ssb-value">{form.phone || '—'}</span>
           </div>
           <div className="ssb-item">
             <span className="ssb-label">{t.totalLabel} :</span>
-            <span className="ssb-value">{total} ل.س.</span>
+            <span className="ssb-value">{grandTotal.toFixed(2)} EGP</span>
           </div>
           <div className="ssb-item">
             <span className="ssb-label">{t.payMethod} :</span>
@@ -131,7 +206,7 @@ export default function OrderSuccessPage() {
           </div>
         </div>
 
-        {/* 3. Order Details Table */}
+        {/* 4. Order Details Table */}
         <div className="success-details">
           <h2 className="success-section-title">{t.detailsTitle}</h2>
           <table className="success-table">
@@ -142,33 +217,28 @@ export default function OrderSuccessPage() {
               </tr>
             </thead>
             <tbody>
-              {/* Product rows */}
-              {items.length > 0 ? (
-                items.map(item => (
-                  <tr key={item.cartKey}>
-                    <td>
-                      {language === 'ar' ? item.nameAr : item.name}
-                      {item.colorAr && ` - ${language === 'ar' ? item.colorAr : item.color}`}
-                      {` (${item.qty}x)`}
-                    </td>
-                    <td>{(item.price * item.qty).toFixed(2)} ل.س.</td>
-                  </tr>
-                ))
-              ) : (
+              {items.length > 0 ? items.map(item => (
+                <tr key={item.cartKey || item.id}>
+                  <td>
+                    {language === 'ar' ? (item.nameAr || item.name) : (item.name || item.nameAr)}
+                    {item.color && ` - ${item.color}`}
+                    {` (${item.qty}x)`}
+                  </td>
+                  <td>{(item.price * item.qty).toFixed(2)} EGP</td>
+                </tr>
+              )) : (
                 <tr>
-                  <td>يامبل & بيرد - كرسي السيارة للأطفال - أحمر (1x)</td>
-                  <td>1,200.00 ل.س.</td>
+                  <td colSpan={2} style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>—</td>
                 </tr>
               )}
 
-              {/* Price breakdown rows */}
               <tr className="success-table__subtotal">
                 <td>{t.priceLabel}</td>
-                <td>{productTotal.toFixed(2)} ل.س.</td>
+                <td>{productTotal.toFixed(2)} EGP</td>
               </tr>
               <tr>
                 <td>{t.shippingLabel}</td>
-                <td>{shippingCost === 0 ? '0' : `${shippingCost}.000`} ل.س.</td>
+                <td>{shippingCost === 0 ? '0' : shippingCost} EGP</td>
               </tr>
               <tr>
                 <td>{t.payMethodLabel}</td>
@@ -176,44 +246,45 @@ export default function OrderSuccessPage() {
               </tr>
               <tr className="success-table__total">
                 <td>{t.totalRow}</td>
-                <td>{(productTotal + shippingCost).toFixed(2)} ل.س.</td>
+                <td>{grandTotal.toFixed(2)} EGP</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        {/* 4. Delivery Address */}
-        <div className="success-address">
-          <h2 className="success-section-title">{t.addressTitle}</h2>
-          <div className="success-address__rows">
-            {form.neighborhood && <p>{form.neighborhood}</p>}
-            {form.district     && <p>{form.district}</p>}
-            {form.governorate  && <p>{form.governorate}</p>}
-            {form.country      && <p>{form.country}</p>}
-            {form.phone        && <p>{form.phone}</p>}
-            {form.email        && <p>{form.email}</p>}
-
-            {/* Fallback if no form data */}
-            {!form.governorate && (
-              <>
-                <p>حلا الدروبي</p>
-                <p>الانبعاثات</p>
-                <p>حمص</p>
-                <p>حمص</p>
-                <p>سوريا</p>
-                <p>0994240911</p>
-                <p>Hdroubie0@gmail.com</p>
-              </>
-            )}
+        {/* 5. Delivery Address */}
+        {(form.governorate || form.street) && (
+          <div className="success-address">
+            <h2 className="success-section-title">{t.addressTitle}</h2>
+            <div className="success-address__rows">
+              {form.firstName && <p>{form.firstName} {form.lastName}</p>}
+              {form.street      && <p>{form.street}</p>}
+              {form.neighborhood && <p>{form.neighborhood}</p>}
+              {form.district    && <p>{form.district}</p>}
+              {form.governorate && <p>{form.governorate}</p>}
+              {form.country     && <p>{form.country}</p>}
+              {form.phone       && <p>{form.phone}</p>}
+              {form.email       && <p>{form.email}</p>}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Back to shop button */}
+        {/* 6. Action Buttons */}
         <div className="success-actions">
+          {/* WhatsApp Button */}
+          <a
+            href={waLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="success-whatsapp-btn"
+          >
+            <MessageCircle size={18} />
+            {t.whatsapp}
+          </a>
           <Link to="/shop" className="success-back-btn">{t.backToShop}</Link>
         </div>
 
-        {/* 5. Features Strip */}
+        {/* 7. Features Strip */}
         <section className="success-features">
           <div className="success-features__grid">
             {t.features.map((f, i) => (

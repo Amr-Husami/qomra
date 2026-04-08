@@ -76,10 +76,23 @@
 
 .ph-breadcrumb a:hover { opacity: 0.8; }
 
+/* ── Dark Mode ──────────────────────────── */
+[data-theme="dark"] .page-header {
+  background: linear-gradient(135deg, #1a1f2e 0%, #1e2540 50%, #1a2535 100%);
+}
+
 /* ── Responsive ─────────────────────────── */
 @media (max-width: 767px) {
-  .page-header { padding: 36px 20px; min-height: 120px; }
-  .ph-title { font-size: 28px; }
-  .ph-deco--pacifier { font-size: 32px; right: 5%; }
-  .ph-deco--circle1 { width: 80px; height: 80px; }
+  .page-header {
+    padding: 44px 20px;
+    min-height: 150px;
+  }
+  .ph-title {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+  .ph-deco--pacifier { font-size: 36px; right: 4%; }
+  .ph-deco--circle1  { width: 90px; height: 90px; }
+  .ph-deco--diaper   { font-size: 24px; }
+  .ph-deco--moon     { font-size: 20px; }
 }

@@ -4,24 +4,20 @@
    BASE LAYOUT
    ══════════════════════════════════════════ */
 
-/* Full page wrapper */
 .auth-page {
-  min-height: calc(100vh - 160px); /* fill screen between navbar and footer */
+  min-height: calc(100vh - 160px);
   display: flex;
+  align-items: stretch;
+  justify-content: center;
   background: var(--bg);
 }
 
-/* Split layout: image LEFT, form RIGHT */
-.auth-page {
-  flex-direction: row;      /* LTR: image left, form right */
-}
-
-/* RTL: image on right, form on left (flex-row-reverse) */
+/* RTL: flip order */
 [dir="rtl"] .auth-page {
   flex-direction: row-reverse;
 }
 
-/* Centered card layout (for forgot/reset/verify) */
+/* Centered card layout (forgot / verify / reset) */
 .auth-page--centered {
   flex-direction: column !important;
   align-items: center;
@@ -30,13 +26,15 @@
   background: var(--bg-topbar);
 }
 
-/* ─── LEFT: decorative image panel — smaller to give form more space ──── */
+/* ─── IMAGE PANEL — exactly 594 × 540px ──────────────────────── */
 .auth-image-panel {
-  flex: 0.55;
+  width: 594px;
+  min-width: 594px;
+  min-height: 540px;
   position: relative;
   overflow: hidden;
-  min-height: 500px;
   background: #fce4ec;
+  flex-shrink: 0;
 }
 
 .auth-image-panel img {
@@ -56,26 +54,28 @@
   );
 }
 
-/* ─── RIGHT: form side — bigger, closer to image ─────────────── */
+/* ─── FORM SIDE — exactly 622 × 541px ────────────────────────── */
 .auth-form-side {
-  flex: 1.3;
+  width: 622px;
+  min-width: 622px;
+  min-height: 541px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 28px;     /* reduced side padding to bring form closer to image */
+  padding: 40px 36px;
   background: var(--bg);
+  flex-shrink: 0;
 }
 
 .auth-form-box {
   width: 100%;
-  max-width: 520px;       /* wider form box (was 440px) */
-  /* Thicker pink dashed border */
+  /* Dashed pink border */
   border: 2px dashed var(--primary);
   border-radius: 18px;
-  padding: 48px 44px;     /* taller (was 40px) */
+  padding: 44px 40px;
 }
 
-/* ─── Centered card (forgot/reset/verify) ── */
+/* ─── Centered card (forgot / reset / verify) ─────────────────── */
 .auth-card {
   width: 100%;
   max-width: 560px;
@@ -171,7 +171,6 @@
   outline: none;
   text-align: right;
   transition: border-color 0.2s, box-shadow 0.2s;
-  /* Make room for eye icon on password fields */
   padding-inline-start: 44px;
 }
 
@@ -235,6 +234,15 @@
 
 [dir="ltr"] .auth-terms { text-align: left; }
 
+/* Email hint shown under verify title */
+.auth-email-hint {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 20px;
+  direction: ltr;
+}
+
 /* ══════════════════════════════════════════
    ALERTS
    ══════════════════════════════════════════ */
@@ -247,7 +255,6 @@
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 16px;
-  /* RTL: icon on right */
   flex-direction: row-reverse;
   justify-content: flex-end;
 }
@@ -298,7 +305,6 @@
   cursor: not-allowed;
 }
 
-/* "Don't have an account? Create one" */
 .auth-switch {
   text-align: center;
   font-size: 14px;
@@ -306,7 +312,6 @@
   margin-top: 20px;
 }
 
-/* Pink link */
 .auth-link {
   color: var(--primary);
   font-weight: 700;
@@ -316,7 +321,6 @@
 
 .auth-link:hover { opacity: 0.8; text-decoration: underline; }
 
-/* Back to login link */
 .auth-back-row {
   margin-top: 20px;
   text-align: center;
@@ -360,36 +364,55 @@
    RESPONSIVE
    ══════════════════════════════════════════ */
 
-/* Tablet */
-@media (max-width: 1024px) {
-  .auth-image-panel { flex: 0.5; }
-  .auth-form-box { padding: 36px 32px; max-width: 480px; }
-  .auth-card { padding: 44px 36px; }
+/* Large screens: allow panels to scale proportionally */
+@media (max-width: 1280px) {
+  .auth-image-panel {
+    width: 44%;
+    min-width: unset;
+  }
+  .auth-form-side {
+    width: 56%;
+    min-width: unset;
+  }
 }
 
-/* Mobile — hide image, show full form */
+@media (max-width: 1024px) {
+  .auth-image-panel { width: 42%; }
+  .auth-form-side   { width: 58%; padding: 32px 28px; }
+  .auth-form-box    { padding: 36px 32px; }
+  .auth-card        { padding: 44px 36px; }
+}
+
+/* Mobile — hide image, show form with dashed border */
 @media (max-width: 767px) {
   .auth-page {
     flex-direction: column !important;
   }
 
   .auth-image-panel {
-    display: none; /* hide baby photo on mobile */
+    display: none;
   }
 
   .auth-form-side {
-    padding: 32px 20px;
+    width: 100%;
+    min-width: unset;
     min-height: calc(100vh - 160px);
+    padding: 32px 20px;
+    align-items: flex-start;
   }
 
+  /* Keep the dashed border on mobile — centered card */
   .auth-form-box {
     padding: 28px 20px;
-    border: none;
+    border: 2px dashed var(--primary); /* ← dashed stays on mobile */
+    max-width: 480px;
+    margin: auto;
+    width: 100%;
   }
 
   .auth-card {
     padding: 32px 20px;
-    border: 1px solid var(--border);
+    border: 2px dashed var(--primary); /* ← dashed stays on mobile */
   }
 
   .auth-row-2 {

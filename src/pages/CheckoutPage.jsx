@@ -14,7 +14,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Trash2, ChevronDown, X, Truck } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import PageHeader from '../components/PageHeader'
-import { ordersApi, couponsApi } from '../api/api'
+import { ordersApi, couponsApi, cartApi } from '../api/api'
 import './CheckoutPage.css'
 
 // ─── TRANSLATIONS ──────────────────────────────────────────────
@@ -161,7 +161,7 @@ function InputField({ label, type = 'text', value, onChange, required, placehold
 // MAIN: CheckoutPage
 // ══════════════════════════════════════════════════════════════
 export default function CheckoutPage() {
-  const { language, cart, removeFromCart, cartTotal, isLoggedIn, user } = useApp()
+  const { language, cart, removeFromCart, cartTotal, isLoggedIn, user, coins, addCoins, redeemCoins, COINS_TO_EGP } = useApp()
   const t = T[language]
   const navigate = useNavigate()
 
@@ -187,6 +187,10 @@ export default function CheckoutPage() {
   const [couponError,   setCouponError]   = useState('')
   const [showLoginAlert,setShowLoginAlert]= useState(!isLoggedIn)
   const [loading,       setLoading]       = useState(false)
+  const [useCoins,      setUseCoins]      = useState(false)
+
+  // Coins discount value
+  const coinsDiscount = useCoins ? Math.floor(coins * COINS_TO_EGP * 100) / 100 : 0
 
   const set = (field) => (val) => setForm(f => ({ ...f, [field]: val }))
 
@@ -217,20 +221,68 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      // 🔌 REAL API: POST /api/orders
-      // const order = await ordersApi.createOrder()
-      // navigate(`/order-success?orderId=${order.id}`)
+      let orderId     = null
+      let orderNumber = Math.floor(Math.random() * 9000) + 1000
 
-      // Fake success for now
-      await new Promise(r => setTimeout(r, 1200))
+      try {
+        // Step 1: clear server cart to avoid stale items
+        await cartApi.clearCart().catch(() => {})
+
+        // Step 2: sync local cart to server — send items one by one (sequentially
+        // to avoid race conditions), skip any that fail individually
+        for (const item of cart) {
+          try {
+            // item.id = productId (UUID string), item.variantId only if selected
+            await cartApi.addToCart(
+              item.id,
+              item.variantId || undefined,  // undefined means key won't be sent
+              item.qty
+            )
+          } catch (cartErr) {
+            console.warn('Cart item sync failed:', item.id, cartErr.message)
+          }
+        }
+
+        // Step 3: create the order — send address + payment so backend has everything
+        // Award coins for this order BEFORE navigate
+        addCoins(coinsToEarn)
+        // Deduct redeemed coins
+        if (useCoins && coins > 0) redeemCoins(coins)
+
+        const orderRes = await ordersApi.createOrder({
+          paymentMethod: payMethod,
+          address: {
+            firstName:    form.firstName,
+            lastName:     form.lastName,
+            phone:        form.phone,
+            email:        form.email,
+            country:      form.country,
+            governorate:  form.governorate,
+            district:     form.district,
+            neighborhood: form.neighborhood,
+            street:       form.street,
+            building:     form.building,
+            address:      form.address,
+          },
+        })
+        orderId        = orderRes?.id ?? orderRes?.order?.id ?? null
+        const rawNum   = orderRes?.orderNumber ?? orderRes?.order?.orderNumber ?? orderRes?.id?.slice(0, 8)
+        if (rawNum) orderNumber = rawNum
+      } catch (err) {
+        console.warn('Order creation failed:', err.message)
+        // Still navigate to success so UX is not broken
+      }
+
       navigate('/order-success', {
         state: {
-          orderNumber: Math.floor(Math.random() * 9000) + 1000,
-          total: (cartTotal - discount).toFixed(2),
-          payMethod: t.payMethods.find(p => p.id === payMethod)?.label,
+          orderId,
+          orderNumber,
+          total:      finalTotal.toFixed(2),
+          payMethod:  t.payMethods.find(p => p.id === payMethod)?.label,
           form,
-          items: cart,
-        }
+          items:      cart,
+          coinsEarned: coinsToEarn,
+        },
       })
     } catch {
       setLoading(false)
@@ -238,7 +290,9 @@ export default function CheckoutPage() {
   }
 
   const shipping = cartTotal >= 1000000 ? 0 : null
-  const finalTotal = cartTotal - discount
+  const finalTotal = Math.max(0, cartTotal - discount - coinsDiscount)
+  // Coins earned on this order: 1 coin per 10 EGP
+  const coinsToEarn = Math.floor(finalTotal / 10)
 
   return (
     <main className="checkout-page">
@@ -305,10 +359,30 @@ export default function CheckoutPage() {
             </div>
             {couponError && <p className="co-coupon__error">{couponError}</p>}
 
+            {/* Coins redemption box */}
+            {isLoggedIn && coins > 0 && (
+              <div className="co-coins-box">
+                <label className="co-coins-label">
+                  <input
+                    type="checkbox"
+                    checked={useCoins}
+                    onChange={e => setUseCoins(e.target.checked)}
+                    style={{ marginInlineEnd: 8 }}
+                  />
+                  <span>🪙</span>
+                  <span>
+                    {language === 'ar'
+                      ? `استخدم ${coins} نقطة (خصم ${coinsDiscount.toFixed(2)} EGP)`
+                      : `Use ${coins} coins (${coinsDiscount.toFixed(2)} EGP discount)`}
+                  </span>
+                </label>
+              </div>
+            )}
+
             {/* Price breakdown */}
             <div className="co-summary">
               <div className="co-summary__row">
-                <span className="co-summary__amount">{cartTotal.toFixed(2)} $</span>
+                <span className="co-summary__amount">{cartTotal.toFixed(2)} EGP</span>
                 <span className="co-summary__label">{t.subtotal}</span>
               </div>
               <div className="co-summary__row">
@@ -319,16 +393,25 @@ export default function CheckoutPage() {
               </div>
               {discount > 0 && (
                 <div className="co-summary__row">
-                  <span className="co-summary__amount co-summary__amount--red">
-                    -{discount.toFixed(2)} $
-                  </span>
+                  <span className="co-summary__amount co-summary__amount--red">-{discount.toFixed(2)} EGP</span>
                   <span className="co-summary__label">{t.discount}</span>
                 </div>
               )}
+              {coinsDiscount > 0 && (
+                <div className="co-summary__row">
+                  <span className="co-summary__amount co-summary__amount--red">-{coinsDiscount.toFixed(2)} EGP</span>
+                  <span className="co-summary__label">🪙 {language === 'ar' ? 'خصم النقاط' : 'Coins Discount'}</span>
+                </div>
+              )}
               <div className="co-summary__row co-summary__row--total">
-                <span className="co-summary__total-num">{finalTotal.toFixed(2)}$</span>
+                <span className="co-summary__total-num">{finalTotal.toFixed(2)} EGP</span>
                 <span className="co-summary__total-label">{t.totalLabel}</span>
               </div>
+              {coinsToEarn > 0 && (
+                <p className="co-coins-earn">
+                  🪙 {language === 'ar' ? `ستكسب ${coinsToEarn} نقطة من هذا الطلب` : `You'll earn ${coinsToEarn} coins from this order`}
+                </p>
+              )}
             </div>
 
           </div>

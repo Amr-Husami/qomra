@@ -13,7 +13,7 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   SlidersHorizontal, ChevronDown, X,
@@ -63,6 +63,7 @@ const T = {
     emptyTitle: 'فارغ حالياً، لكن المفاجآت قادمة قريباً 🎁',
     emptyDesc: 'جرب تصفح أقسام أخرى لتجد ما تبحث عنه.',
     emptyBtn: 'تصفح تصنيفات أخرى',
+    searchPlaceholder: 'ابحث عن منتج...',
     prev: 'السابق',
     next: 'التالي',
     // Mobile bottom nav
@@ -90,6 +91,7 @@ const T = {
     emptyTitle: 'Empty for now, but surprises are coming soon 🎁',
     emptyDesc: 'Try browsing other categories to find what you\'re looking for.',
     emptyBtn: 'Browse Other Categories',
+    searchPlaceholder: 'Search for a product...',
     prev: 'Prev',
     next: 'Next',
     navHome: 'Home',
@@ -282,13 +284,31 @@ function FilterPopup({ filters, setFilters, t, language, onClose, categories }) 
 }
 
 // ══════════════════════════════════════════════════════════════
-// TOP BAR — results count + sort dropdown
+// TOP BAR — search + results count + sort dropdown
 // ══════════════════════════════════════════════════════════════
-function TopBar({ total, showing, sort, setSort, t, language, onFilterClick }) {
+function TopBar({ total, showing, sort, setSort, t, language, onFilterClick, search, onSearchChange }) {
   const [open, setOpen] = useState(false)
   const currentSort = sortOptions.find(s => s.id === sort) || sortOptions[0]
 
   return (
+    <div className="shop-topbar-wrap">
+      {/* Search bar — full width above the bar */}
+      <div className="shop-search-bar">
+        <Search size={16} className="shop-search-icon" />
+        <input
+          type="text"
+          className="shop-search-input"
+          placeholder={t.searchPlaceholder}
+          value={search}
+          onChange={e => onSearchChange(e.target.value)}
+        />
+        {search && (
+          <button className="shop-search-clear" onClick={() => onSearchChange('')}>
+            <X size={15} />
+          </button>
+        )}
+      </div>
+
     <div className="shop-topbar">
       {/* Sort dropdown */}
       <div className="sort-wrap">
@@ -321,6 +341,7 @@ function TopBar({ total, showing, sort, setSort, t, language, onFilterClick }) {
         <SlidersHorizontal size={15} />
         <span>{t.filter}</span>
       </button>
+    </div>
     </div>
   )
 }
@@ -450,6 +471,19 @@ export default function ShopPage() {
   const [sort,         setSort]         = useState('default')
   const [currentPage,  setCurrentPage]  = useState(1)
   const [showFilter,   setShowFilter]   = useState(false)
+  const [searchInput,  setSearchInput]  = useState(searchParams.get('search') || '')
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '')
+  const debounceRef = useRef(null)
+
+  // Debounce: wait 400ms after user stops typing before firing the API call
+  const handleSearchChange = (value) => {
+    setSearchInput(value)
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value)
+      setCurrentPage(1)
+    }, 400)
+  }
 
   // API-driven state
   const [products,     setProducts]     = useState([])
@@ -476,12 +510,13 @@ export default function ShopPage() {
       .catch(() => {})
   }, [])
 
-  // Fetch products from API whenever filters/sort/page change
+  // Fetch products from API whenever filters/sort/page/search change
   const fetchProducts = useCallback(() => {
     const params = { page: currentPage, limit: PRODUCTS_PER_PAGE }
 
     if (filters.categories.length > 0) params.category = filters.categories[0]
     if (sort !== 'default') params.sort = sort
+    if (debouncedSearch.trim()) params.search = debouncedSearch.trim()
 
     setLoadingProds(true)
     productsApi.getProducts(params)
@@ -505,7 +540,7 @@ export default function ShopPage() {
       })
       .catch(() => { setProducts([]); setTotalProducts(0); setTotalPages(1) })
       .finally(() => setLoadingProds(false))
-  }, [filters, sort, currentPage])
+  }, [filters, sort, currentPage, debouncedSearch])
 
   useEffect(() => { fetchProducts() }, [fetchProducts])
 
@@ -538,6 +573,8 @@ export default function ShopPage() {
               t={t}
               language={language}
               onFilterClick={() => setShowFilter(true)}
+              search={searchInput}
+              onSearchChange={handleSearchChange}
             />
 
             {/* Products grid OR empty state */}

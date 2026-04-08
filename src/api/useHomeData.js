@@ -119,16 +119,8 @@ export function useHomeData() {
         })))
       }
 
-      // Age groups
-      if (results[2].status === 'fulfilled' && results[2].value?.length > 0) {
-        setAgeGroups(results[2].value.map(g => ({
-          ...g,
-          slug: g.slug || g.value?.toLowerCase() || g.id,
-          labelAr: g.labelAr || g.labelLocalized?.ar || g.label,
-          labelEn: g.labelEn || g.labelLocalized?.en || g.label,
-          image: fixImageUrl(g.imageUrl || g.image),
-        })))
-      }
+      // Age groups — the API has no images, so we always use the fake data
+      // which already has the correct photos and background colours.
 
       // New products
       if (results[3].status === 'fulfilled') {
@@ -153,7 +145,12 @@ export function useHomeData() {
 
       // Brands
       if (results[6].status === 'fulfilled' && results[6].value?.length > 0) {
-        setBrands(results[6].value.map(b => ({ ...b, logo: fixImageUrl(b.logo) })))
+        setBrands(results[6].value.map(b => ({
+          ...b,
+          nameAr: b.nameAr || b.nameLocalized?.ar || b.name,
+          nameEn: b.nameEn || b.nameLocalized?.en || b.name,
+          logo: fixImageUrl(b.logoUrl || b.logo),
+        })))
       }
 
       } catch (e) {

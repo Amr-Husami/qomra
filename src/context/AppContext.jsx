@@ -2,6 +2,11 @@ import Cookies from 'js-cookie'
 import { authApi } from '../api/api'
 import { createContext, useContext, useState, useEffect } from 'react'
 
+// ── Coins helpers (localStorage) ─────────────────────────────
+const COINS_KEY = 'qomra_coins'
+const loadCoins = () => { try { return parseInt(localStorage.getItem(COINS_KEY) || '0', 10) } catch { return 0 } }
+const saveCoinsLS = (n) => { try { localStorage.setItem(COINS_KEY, String(n)) } catch {} }
+
 const AppContext = createContext()
 
 export function AppProvider({ children }) {
@@ -9,6 +14,7 @@ export function AppProvider({ children }) {
   const [language, setLanguage] = useState('ar')
   const [cart, setCart]       = useState([])
   const [wishlist, setWishlist] = useState([])
+  const [coins, setCoins]     = useState(loadCoins)
   const [authReady, setAuthReady] = useState(false) // true once we've tried to restore session
 
   // ── AUTH STATE ────────────────────────────────────────────────
@@ -42,10 +48,30 @@ export function AppProvider({ children }) {
 
   const login = (userData) => setUser(userData)
   const logout = () => {
-    authApi.logout()  // removes cookie
+    authApi.logout()
     setUser(null)
     setCart([])
   }
+
+  // ── COINS ─────────────────────────────────────────────────
+  // Earn coins: 1 coin per 10 EGP spent (called after order placed)
+  const addCoins = (amount) => {
+    setCoins(prev => {
+      const next = prev + amount
+      saveCoinsLS(next)
+      return next
+    })
+  }
+  // Redeem coins: deduct from balance (called at checkout)
+  const redeemCoins = (amount) => {
+    setCoins(prev => {
+      const next = Math.max(0, prev - amount)
+      saveCoinsLS(next)
+      return next
+    })
+  }
+  // How much money is a coin worth: 100 coins = 5 EGP
+  const COINS_TO_EGP = 0.05  // 1 coin = 0.05 EGP, so 100 coins = 5 EGP
 
   const isLoggedIn = !!user
   // isAdmin = true if the user has ADMIN role
@@ -115,6 +141,7 @@ export function AppProvider({ children }) {
       language, toggleLanguage,
       cart, addToCart, removeFromCart, updateQty, cartTotal, cartCount,
       wishlist, toggleWishlist, isInWishlist,
+      coins, addCoins, redeemCoins, COINS_TO_EGP,
       user, login, logout, isLoggedIn, isAdmin,
     }}>
       {children}

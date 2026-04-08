@@ -12,7 +12,7 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   User, Package, Star, MapPin, Lock, LogOut,
@@ -21,8 +21,9 @@ import {
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import PageHeader from '../components/PageHeader'
-import { authApi } from '../api/api'
+import { authApi, ordersApi } from '../api/api'
 import './ProfilePage.css'
+
 
 // ─── TRANSLATIONS ──────────────────────────────────────────────
 const T = {
@@ -228,11 +229,6 @@ const FAKE_ORDERS = [
   },
 ]
 
-// ─── FAKE ADDRESSES ────────────────────────────────────────────
-const INITIAL_ADDRESSES = [
-  { id: 1, name: 'أحمد المحمد', nameEn: 'Ahmad AlMohammad', governorate: 'حمص', district: 'الانشاءات', neighborhood: 'الانشاءات', street: 'المبنى 12', building: 'الشقة رقم 2' },
-  { id: 2, name: 'محمود الحمصي', nameEn: 'Mahmoud AlHomsy', governorate: 'حمص', district: 'الانشاءات', neighborhood: 'شارع غسان كنفاني', street: 'المبنى 12', building: 'الطابق الأول الشقة رقم 2' },
-]
 
 // ─── FAKE COUPONS ──────────────────────────────────────────────
 const COUPONS = [
@@ -263,20 +259,52 @@ const CHECKIN_DAYS = [
 // ══════════════════════════════════════════════════════════════
 function PersonalInfoTab({ t, user }) {
   const [form, setForm] = useState({
-    firstName: user?.firstName || 'user@gmail.kd',
-    lastName:  user?.lastName  || 'user@gmail.kd',
-    email:     user?.email     || 'user@gmail.kd',
+    firstName: user?.firstName || '',
+    lastName:  user?.lastName  || '',
+    email:     user?.email     || '',
     phone:     '',
     birthDay: '', birthMonth: '', birthYear: '',
     gender: 'female',
   })
-  const [saved, setSaved] = useState(false)
+  const [saved,    setSaved]   = useState(false)
+  const [loading,  setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
   const set = f => v => setForm(p => ({ ...p, [f]: v }))
 
+  // Load real profile on mount
+  useEffect(() => {
+    authApi.getProfile()
+      .then(data => {
+        const p = data?.user ?? data
+        if (!p) return
+        setForm(prev => ({
+          ...prev,
+          firstName: p.firstName || prev.firstName,
+          lastName:  p.lastName  || prev.lastName,
+          email:     p.email     || prev.email,
+          phone:     p.phone     || '',
+          gender:    p.gender?.toLowerCase() || 'female',
+        }))
+      })
+      .catch(() => {})
+  }, [])
+
   const handleSave = async () => {
-    // 🔌 API: POST /api/auth/profile
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    setErrorMsg('')
+    setLoading(true)
+    try {
+      await authApi.updateProfile({
+        firstName: form.firstName,
+        lastName:  form.lastName,
+        phone:     form.phone,
+        gender:    form.gender?.toUpperCase(),
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (err) {
+      setErrorMsg(err.message || 'حدث خطأ')
+    }
+    setLoading(false)
   }
 
   const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
@@ -363,31 +391,92 @@ function PersonalInfoTab({ t, user }) {
         </div>
       </div>
 
-      {saved && <div className="pf-success">✅ تم حفظ التغييرات!</div>}
+      {saved    && <div className="pf-success">✅ {t.saveChanges === 'Save Changes' ? 'Changes saved!' : 'تم حفظ التغييرات!'}</div>}
+      {errorMsg && <div className="pf-error">❌ {errorMsg}</div>}
 
-      <button className="pf-save-btn" onClick={handleSave}>{t.saveChanges}</button>
+      <button className="pf-save-btn" onClick={handleSave} disabled={loading}>
+        {loading ? '...' : t.saveChanges}
+      </button>
     </div>
   )
+}
+
+// ── normalize an order from API ───────────────────────────────
+function normalizeOrder(o) {
+  const statusRaw = (o.status || 'PENDING').toUpperCase()
+  const statusMap = {
+    PENDING:    { en: 'Processing', ar: 'قيد التنفيذ', key: 'processing' },
+    PROCESSING: { en: 'Processing', ar: 'قيد التنفيذ', key: 'processing' },
+    SHIPPED:    { en: 'Shipped',    ar: 'تم الشحن',    key: 'shipped'    },
+    DELIVERED:  { en: 'Delivered',  ar: 'تم التسليم',   key: 'delivered'  },
+    CANCELLED:  { en: 'Cancelled',  ar: 'ملغى',        key: 'cancelled'  },
+  }
+  const s = statusMap[statusRaw] || statusMap.PENDING
+  const dateObj = o.createdAt ? new Date(o.createdAt) : new Date()
+  return {
+    id:       `#${(o.orderNumber || o.id?.slice(0,8) || '—').toString().toUpperCase()}`,
+    rawId:    o.id,
+    date:     dateObj.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' }),
+    dateEn:   dateObj.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }),
+    phone:    o.phone || o.address?.phone || '—',
+    total:    `${o.total ?? o.totalPrice ?? 0} EGP`,
+    pay:      o.paymentMethod || '—',
+    status:   s.key,
+    statusAr: s.ar,
+    statusEn: s.en,
+    items:    (o.items || o.orderItems || []).map(it => ({
+      name:    it.product?.nameAr || it.nameAr || it.name || '—',
+      nameEn:  it.product?.nameEn || it.nameEn || it.name || '—',
+      price:   `${it.price ?? 0} EGP`,
+      qty:     it.quantity || it.qty || 1,
+    })),
+    shipping:   o.shippingCost ?? 50,
+    grandTotal: `${(o.total ?? o.totalPrice ?? 0)} EGP`,
+    address:    o.address
+      ? [o.address.street, o.address.district, o.address.governorate, o.address.country].filter(Boolean)
+      : [],
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
 // TAB: My Orders
 // ══════════════════════════════════════════════════════════════
 function OrdersTab({ t, language }) {
-  const [filter,      setFilter]      = useState('all')
-  const [search,      setSearch]      = useState('')
+  const [filter,        setFilter]        = useState('all')
+  const [search,        setSearch]        = useState('')
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [orders,        setOrders]        = useState([])
+  const [loading,       setLoading]       = useState(true)
 
-  const statusMap = { all: null, processing: 'processing', shipped: 'shipped', cancelled: 'cancelled' }
+  useEffect(() => {
+    ordersApi.getMyOrders()
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data?.orders || data?.data || [])
+        setOrders(list.map(normalizeOrder))
+      })
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const filtered = FAKE_ORDERS.filter(o => {
-    const matchStatus = !statusMap[filter] || o.status === statusMap[filter]
-    const matchSearch = !search || o.id.includes(search) || o.items[0].name.includes(search)
+  const statusFilterMap = { all: null, processing: 'processing', shipped: 'shipped', delivered: 'delivered', cancelled: 'cancelled' }
+
+  const filtered = orders.filter(o => {
+    const matchStatus = !statusFilterMap[filter] || o.status === statusFilterMap[filter]
+    const matchSearch = !search || o.id.toLowerCase().includes(search.toLowerCase()) ||
+      o.items.some(it => it.name.includes(search) || it.nameEn.toLowerCase().includes(search.toLowerCase()))
     return matchStatus && matchSearch
   })
 
   if (selectedOrder) {
     return <OrderDetail order={selectedOrder} t={t} language={language} onBack={() => setSelectedOrder(null)} />
+  }
+
+  if (loading) {
+    return (
+      <div className="pf-tab" style={{ display:'flex', justifyContent:'center', padding:'60px 0' }}>
+        <div style={{ width:36, height:36, border:'4px solid var(--border)', borderTopColor:'var(--primary)', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
+      </div>
+    )
   }
 
   return (
@@ -424,7 +513,7 @@ function OrdersTab({ t, language }) {
             <div className="orders-empty__x">🚫</div>
           </div>
           <h3>{t.emptyOrdersTitle}</h3>
-          <Link to="/shop" className="pf-save-btn" style={{ textDecoration:'none', textAlign:'center', display:'block' }}>
+          <Link to="/shop" className="orders-empty__btn">
             {t.startShopping}
           </Link>
         </div>
@@ -443,15 +532,15 @@ function OrdersTab({ t, language }) {
             <tbody>
               {filtered.map(order => (
                 <tr key={order.id}>
-                  <td className="orders-table__id">{order.id}</td>
-                  <td>{language === 'ar' ? order.date : order.dateEn}</td>
-                  <td className="orders-table__total">{order.total}</td>
-                  <td>
+                  <td className="orders-table__id" data-label={t.orderNum}>{order.id}</td>
+                  <td data-label={t.orderDate}>{language === 'ar' ? order.date : order.dateEn}</td>
+                  <td className="orders-table__total" data-label={t.orderTotal}>{order.total}</td>
+                  <td data-label={t.orderStatus}>
                     <span className={`order-status-badge order-status-badge--${order.status}`}>
                       {language === 'ar' ? order.statusAr : order.statusEn}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="">
                     <button className="orders-detail-btn" onClick={() => setSelectedOrder(order)}>
                       {t.viewDetails}
                     </button>
@@ -467,10 +556,12 @@ function OrdersTab({ t, language }) {
 }
 
 function OrderDetail({ order, t, language, onBack }) {
+  const STEP_ORDER = ['processing', 'shipped', 'delivered']
+  const currentIdx = STEP_ORDER.indexOf(order.status)
   const steps = [
-    { label: t.statusOrdered,  date: order.date, done: true  },
-    { label: t.statusShipped,  date: order.date, done: order.status === 'shipped' || order.status === 'delivered' },
-    { label: t.statusArriving, date: '16 شباط',  done: false },
+    { label: t.statusOrdered,  date: order.date, done: true },
+    { label: t.statusShipped,  date: currentIdx >= 1 ? order.date : '', done: currentIdx >= 1 },
+    { label: t.statusArriving, date: currentIdx >= 2 ? order.date : '', done: currentIdx >= 2 },
   ]
   return (
     <div className="pf-tab">
@@ -529,9 +620,27 @@ function OrderDetail({ order, t, language, onBack }) {
       </table>
 
       {/* Delivery address */}
-      <h3 className="pf-section-title">{t.addressTitle}</h3>
-      <div className="order-address">
-        {order.address.map((line, i) => <p key={i}>{line}</p>)}
+      {order.address.length > 0 && (
+        <>
+          <h3 className="pf-section-title">{t.addressTitle}</h3>
+          <div className="order-address">
+            {order.address.map((line, i) => <p key={i}>{line}</p>)}
+          </div>
+        </>
+      )}
+
+      {/* WhatsApp contact */}
+      <div style={{ marginTop: 28, display:'flex', justifyContent:'center' }}>
+        <a
+          href={`https://wa.me/201000000000?text=${encodeURIComponent(
+            (language === 'ar' ? 'مرحباً، لدي استفسار عن طلبي رقم ' : 'Hello, I have a question about my order #') + order.id
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="order-whatsapp-btn"
+        >
+          💬 {language === 'ar' ? 'تواصل معنا واتساب بخصوص هذا الطلب' : 'Contact Us on WhatsApp About This Order'}
+        </a>
       </div>
     </div>
   )
@@ -541,16 +650,16 @@ function OrderDetail({ order, t, language, onBack }) {
 // TAB: Points
 // ══════════════════════════════════════════════════════════════
 function PointsTab({ t, language }) {
-  const [points,    setPoints]    = useState(1250)
+  const { coins, addCoins } = useApp()
+  const coinValueEGP = (coins * 0.05).toFixed(2)   // 1 coin = 0.05 EGP
   const [checkedIn, setCheckedIn] = useState(false)
   const [copied,    setCopied]    = useState(null)
   const [checkinDays, setCheckinDays] = useState(CHECKIN_DAYS)
 
   const handleCheckin = async () => {
     if (checkedIn) return
-    // 🔌 API: POST /api/checkin
     setCheckedIn(true)
-    setPoints(p => p + 5)
+    addCoins(5)
     setCheckinDays(prev => prev.map((d, i) => i === 0 ? { ...d, done: true } : d))
   }
 
@@ -573,9 +682,12 @@ function PointsTab({ t, language }) {
           <p className="points-balance__label">{t.myBalance}</p>
           <div className="points-balance__amount">
             <span className="points-coin">🪙</span>
-            <span className="points-num">{points.toLocaleString()}</span>
+            <span className="points-num">{coins.toLocaleString()}</span>
             <span className="points-label">{t.points}</span>
           </div>
+          <p className="points-egp-value">
+            ≈ {coinValueEGP} EGP {language === 'ar' ? '(يمكن استخدامها عند الدفع)' : '(usable at checkout)'}
+          </p>
         </div>
       </div>
 
@@ -645,15 +757,33 @@ function PointsTab({ t, language }) {
 // TAB: Addresses
 // ══════════════════════════════════════════════════════════════
 function AddressesTab({ t, language }) {
-  const [addresses,    setAddresses]    = useState(INITIAL_ADDRESSES)
+  const [addresses,    setAddresses]    = useState([])
   const [openMenu,     setOpenMenu]     = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editTarget,   setEditTarget]   = useState(null)
   const [showAddForm,  setShowAddForm]  = useState(false)
 
-  const emptyForm = { name: '', lastName: '', phone: '', governorate: 'حمص', district: 'الانشاءات', neighborhood: '', street: '', address: '' }
+  const emptyForm = { name: '', lastName: '', phone: '', governorate: '', district: '', neighborhood: '', street: '', address: '' }
   const [form, setForm] = useState(emptyForm)
   const set = f => v => setForm(p => ({ ...p, [f]: v }))
+
+  useEffect(() => {
+    authApi.getAddresses()
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data?.addresses || data?.data || [])
+        setAddresses(list.map(a => ({
+          id:           a.id,
+          name:         `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.name || '—',
+          nameEn:       `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.nameEn || '—',
+          governorate:  a.governorate || '',
+          district:     a.district    || '',
+          neighborhood: a.neighborhood || '',
+          street:       a.street      || '',
+          building:     a.address     || a.building || '',
+        })))
+      })
+      .catch(() => setAddresses([]))
+  }, [])
 
   const openEdit = (addr) => {
     setEditTarget(addr)
@@ -661,21 +791,34 @@ function AddressesTab({ t, language }) {
     setOpenMenu(null)
   }
 
-  const saveEdit = () => {
-    // 🔌 API: PATCH /api/auth/addresses/:id
-    setAddresses(prev => prev.map(a => a.id === editTarget.id ? { ...a, ...form, name: form.name, building: form.address } : a))
+  const saveEdit = async () => {
+    try {
+      await authApi.updateAddress(editTarget.id, {
+        firstName: form.name, lastName: form.lastName, phone: form.phone,
+        governorate: form.governorate, district: form.district,
+        neighborhood: form.neighborhood, street: form.street, address: form.address,
+      })
+    } catch {}
+    setAddresses(prev => prev.map(a => a.id === editTarget.id ? { ...a, name: form.name, governorate: form.governorate, district: form.district, neighborhood: form.neighborhood, street: form.street, building: form.address } : a))
     setEditTarget(null)
   }
 
-  const handleDelete = () => {
-    // 🔌 API: DELETE /api/auth/addresses/:id
+  const handleDelete = async () => {
+    try { await authApi.deleteAddress(deleteTarget.id) } catch {}
     setAddresses(prev => prev.filter(a => a.id !== deleteTarget.id))
     setDeleteTarget(null)
   }
 
-  const handleAdd = () => {
-    // 🔌 API: POST /api/auth/addresses
-    const newAddr = { id: Date.now(), name: form.name, nameEn: form.name, governorate: form.governorate, district: form.district, neighborhood: form.neighborhood, street: form.street, building: form.address }
+  const handleAdd = async () => {
+    let newAddr = { id: Date.now(), name: form.name, nameEn: form.name, governorate: form.governorate, district: form.district, neighborhood: form.neighborhood, street: form.street, building: form.address }
+    try {
+      const res = await authApi.addAddress({
+        firstName: form.name, lastName: form.lastName, phone: form.phone,
+        governorate: form.governorate, district: form.district,
+        neighborhood: form.neighborhood, street: form.street, address: form.address,
+      })
+      if (res?.id) newAddr.id = res.id
+    } catch {}
     setAddresses(prev => [...prev, newAddr])
     setShowAddForm(false)
     setForm(emptyForm)
@@ -815,15 +958,22 @@ function AddressesTab({ t, language }) {
 // ══════════════════════════════════════════════════════════════
 function ChangePasswordTab({ t }) {
   const [form, setForm] = useState({ current: '', newPwd: '', confirm: '' })
-  const [status, setStatus] = useState(null)
+  const [status,  setStatus]  = useState(null)
+  const [loading, setLoading] = useState(false)
   const set = f => v => setForm(p => ({ ...p, [f]: v }))
 
   const handleSave = async () => {
     if (form.newPwd !== form.confirm) { setStatus('error'); return }
-    // 🔌 API: PATCH /api/auth/change-password  { currentPassword, newPassword }
-    setStatus('success')
-    setForm({ current: '', newPwd: '', confirm: '' })
-    setTimeout(() => setStatus(null), 3000)
+    setLoading(true)
+    try {
+      await authApi.changePassword(form.current, form.newPwd)
+      setStatus('success')
+      setForm({ current: '', newPwd: '', confirm: '' })
+      setTimeout(() => setStatus(null), 3000)
+    } catch {
+      setStatus('error')
+    }
+    setLoading(false)
   }
 
   return (
@@ -846,7 +996,9 @@ function ChangePasswordTab({ t }) {
         <input className="pf-input" type="password" value={form.confirm} onChange={e => set('confirm')(e.target.value)} />
       </div>
 
-      <button className="pf-save-btn" onClick={handleSave}>{t.savePassword}</button>
+      <button className="pf-save-btn" onClick={handleSave} disabled={loading}>
+        {loading ? '...' : t.savePassword}
+      </button>
     </div>
   )
 }
@@ -855,7 +1007,7 @@ function ChangePasswordTab({ t }) {
 // MAIN: ProfilePage
 // ══════════════════════════════════════════════════════════════
 export default function ProfilePage() {
-  const { language, user, logout, isLoggedIn } = useApp()
+  const { language, user, logout, isLoggedIn, coins } = useApp()
   const t = T[language]
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('personal')
@@ -885,7 +1037,7 @@ export default function ProfilePage() {
   const TABS = [
     { key: 'personal',  label: t.personalInfo,   icon: <User size={17} /> },
     { key: 'orders',    label: t.myOrders,        icon: <Package size={17} /> },
-    { key: 'points',    label: t.myPoints,        icon: <Star size={17} />, badge: '250' },
+    { key: 'points',    label: t.myPoints,        icon: <Star size={17} />, badge: String(coins) },
     { key: 'addresses', label: t.myAddresses,     icon: <MapPin size={17} /> },
     { key: 'password',  label: t.changePassword,  icon: <Lock size={17} /> },
   ]

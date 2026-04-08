@@ -294,7 +294,7 @@ export default function Navbar() {
 
                 {/* Special items at bottom */}
                 <Link
-                  to="/shop?category=hot-deals"
+                  to="/deals"
                   className="cat-item cat-item--hot"
                   onClick={() => setShowCategories(false)}
                 >
@@ -302,7 +302,7 @@ export default function Navbar() {
                   {t.hotDeals}
                 </Link>
                 <Link
-                  to="/shop?category=special-offers"
+                  to="/deals"
                   className="cat-item cat-item--special"
                   onClick={() => setShowCategories(false)}
                 >
